@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
+using System.Threading;
 using System.Threading.Tasks;
 using clup.Options;
 using JetBrains.Annotations;
@@ -79,8 +81,15 @@ namespace clup.Core
 
         #endregion
 
+        // Executes the requested command
         private static void Run([NotNull] ClupOptionsBase options, [NotNull] Action<string> handler)
         {
+            // Stats
+            Stopwatch stopwatch = new Stopwatch();
+            stopwatch.Start();
+            int processed = 0;
+            long bytes = 0;
+
             // Initial arguments validation
             options.Validate();
 
@@ -110,6 +119,7 @@ namespace clup.Core
             Parallel.ForEach(map.Values, duplicates =>
             {
                 if (duplicates.Count < 2) return;
+                long filesize = new FileInfo(duplicates[0]).Length;
                 (long ticks, string path) = (File.GetCreationTimeUtc(duplicates[0]).Ticks, duplicates[0]);
                 foreach (string duplicate in duplicates.Skip(1))
                 {
@@ -121,7 +131,19 @@ namespace clup.Core
                         (ticks, path) = (creation, duplicate);
                     }
                 }
+
+                // Update the statistics
+                Interlocked.Add(ref processed, duplicates.Count - 1);
+                Interlocked.Add(ref bytes, filesize * (duplicates.Count - 1));
             });
+
+            // Display the statistics
+            stopwatch.Stop();
+            Console.WriteLine(
+                "==== DONE ====\n" +
+                $"Elapsed time: {stopwatch.Elapsed:hh:mm:ss}" +
+                $"Duplicates found/deleted: {processed}" +
+                $"Bytes (potentially) saved: {bytes}");
         }
     }
 }
