@@ -176,7 +176,8 @@ namespace clup.Core
                 $"{Environment.NewLine}==== DONE ===={Environment.NewLine}" +
                 $"Elapsed time: {stopwatch.Elapsed:g}{Environment.NewLine}" +
                 $"Duplicates found/deleted: {processed}{Environment.NewLine}" +
-                $"Bytes (potentially) saved: {bytes}");
+                $"Bytes identified: {bytes}{Environment.NewLine}" +
+                $"Approximate size: {bytes.ToFileSizeString()}");
         }
 
         // Writes a complete log of the processed duplicates to the specified directory
