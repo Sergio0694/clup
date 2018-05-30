@@ -117,9 +117,11 @@ namespace clup.Core
             using (AsciiProgressBar progressBar = new AsciiProgressBar())
             {
                 int i = 0;
+                HashSet<string> exclusions = new HashSet<string>(options.FileExtensions);
                 Parallel.ForEach(files, file =>
                 {
                     // Compute the MD5 hash
+                    if (exclusions.Count > 0 && exclusions.Contains(Path.GetExtension(file))) return;
                     using (MD5 md5 = MD5.Create())
                     try
                     {

@@ -16,6 +16,9 @@ namespace clup.Options
         [Option("extensions", HelpText = "The list of file extensions to look for when scanning the target directory. If not specified, all existing files will be analyzed.", Required = false, Separator = ',')]
         public IEnumerable<string> FileExtensions { get; set; }
 
+        [Option("exclude", HelpText = "The list of optional file extensions to filter out, when no other file extensions are specified", Required = false)]
+        public IEnumerable<string> FileExclusions { get; set; }
+
         [Option(Default = 0, HelpText = "The minimum size of files to be analyzed.", Required = false)]
         public long MinSize { get; set; }
 
@@ -35,7 +38,7 @@ namespace clup.Options
         public void Validate()
         {
             char[] invalid = Path.GetInvalidFileNameChars();
-            if (FileExtensions?.Any(ext => ext.Any(c => invalid.Contains(c))) == true)
+            if (FileExtensions.Any(ext => ext.Any(c => invalid.Contains(c))))
                 throw new ArgumentException("One or more file extensions are not valid");
             if (MinSize < 0) throw new ArgumentException("The minimum file size must be a positive number");
             if (MaxSize <= MinSize) throw new ArgumentException("The maximum size must be greater than the minimum size");
@@ -43,6 +46,8 @@ namespace clup.Options
             invalid = Path.GetInvalidPathChars();
             if (SourceDirectory.Any(c => invalid.Contains(c))) throw new ArgumentException("The source directory isn't valid");
             if (!Directory.Exists(SourceDirectory)) throw new ArgumentException("The source directory doesn't exist");
+            if (FileExtensions.Any() && FileExclusions.Any())
+                throw new ArgumentException("The list of extensions to exclude must be empty when other extensions to look for are specified");
         }
     }
 }
