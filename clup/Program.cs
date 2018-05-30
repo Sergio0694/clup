@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 using clup.Core;
 using clup.Options;
 using CommandLine;
@@ -9,10 +10,15 @@ namespace clup
     {
         public static int Main(string[] args)
         {
+            ConsoleColor color = Console.ForegroundColor;
+            int code;
+            bool beep = false;
             try
             {
                 // Try to execute the requested action
-                return Parser.Default.ParseArguments<DeleteOptions, MoveOptions, ListOptions>(args).MapResult(
+                ParserResult<object> result = Parser.Default.ParseArguments<DeleteOptions, MoveOptions, ListOptions>(args);
+                result.WithParsed<ClupOptionsBase>(options => beep = options.Beep);
+                code = result.MapResult(
                     (DeleteOptions options) => { ClupEngine.Run(options); return 0; },
                     (MoveOptions options) => { ClupEngine.Run(options); return 0; },
                     (ListOptions options) => { ClupEngine.Run(options); return 0;},
@@ -23,14 +29,28 @@ namespace clup
             {
                 System.Diagnostics.ExceptionExtentions.Demystify(e);
                 Console.WriteLine($"{e.StackTrace}{Environment.NewLine}{e.GetType()} - {e.Message}");
+                code = 1;
             }
 #else
             catch
             {
                 Console.WriteLine("Something went wrong :'(");
+                code = 1;
             }
 #endif
-            return 1;
+
+            // Notify and return
+            if (beep)
+            {
+                if (code == 0)
+                {
+                    Console.Beep(); Thread.Sleep(200); Console.Beep(); // Two high-pitched beeps to indicate success
+                }
+                else Console.Beep(320, 500);
+            }
+
+            Console.ForegroundColor = color; // Reset to the default color
+            return code;
         }
     }
 }

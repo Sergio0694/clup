@@ -37,7 +37,6 @@ namespace clup.Core
                 });
                 WriteLog(options.LogDirectory, options, deletions);
             }
-            if (options.Beep) Console.Beep();
         }
 
         /// <summary>
@@ -53,7 +52,6 @@ namespace clup.Core
             }
 
             Run(options, Handler);
-            if (options.Beep) Console.Beep();
         }
 
         /// <summary>
@@ -68,7 +66,6 @@ namespace clup.Core
 
             // Write the log to disk
             WriteLog(options.TargetDirectory ?? options.SourceDirectory, options, duplicates);
-            if (options.Beep) Console.Beep();
         }
 
         #endregion
@@ -83,7 +80,9 @@ namespace clup.Core
             stopwatch.Start();
             int processed = 0;
             long bytes = 0;
+            Console.ForegroundColor = ConsoleColor.DarkGreen;
             Console.WriteLine("==== START ====");
+            Console.ForegroundColor = ConsoleColor.White;
 
             // Initial arguments validation
             options.Validate();
@@ -104,6 +103,7 @@ namespace clup.Core
             // Initialize the mapping between each target file and its MD5 hash
             Console.Write($"Preprocessing {files.Length} files... ");
             ConcurrentDictionary<string, List<string>> map = new ConcurrentDictionary<string, List<string>>();
+            Console.ForegroundColor = ConsoleColor.Gray;
             using (AsciiProgressBar progressBar = new AsciiProgressBar())
             {
                 int i = 0;
@@ -146,7 +146,9 @@ namespace clup.Core
             }
 
             // Process each duplicate file that has been found
+            Console.ForegroundColor = ConsoleColor.White;
             Console.Write($"{Environment.NewLine}Processing duplicates... ");
+            Console.ForegroundColor = ConsoleColor.Gray;
             using (AsciiProgressBar progressBar = new AsciiProgressBar())
             {
                 int i = 0, count = map.Values.Count;
@@ -175,8 +177,10 @@ namespace clup.Core
 
             // Display the statistics
             stopwatch.Stop();
+            Console.ForegroundColor = ConsoleColor.DarkGreen;
+            Console.WriteLine($"{Environment.NewLine}==== DONE ====");
+            Console.ForegroundColor = ConsoleColor.White;
             Console.WriteLine(
-                $"{Environment.NewLine}==== DONE ===={Environment.NewLine}" +
                 $"Elapsed time: {stopwatch.Elapsed:g}{Environment.NewLine}" +
                 $"Duplicates found/deleted: {processed}{Environment.NewLine}" +
                 $"Bytes identified: {bytes}{Environment.NewLine}" +
@@ -199,7 +203,7 @@ namespace clup.Core
                 }
                 writer.WriteLine($"--minsize={options.MinSize}");
                 writer.WriteLine($"--maxsize={options.MaxSize}");
-                writer.WriteLine($"--mode={options.Match}");
+                writer.WriteLine($"--match={options.Match}");
                 writer.WriteLine("========");
                 foreach (string duplicate in duplicates) writer.WriteLine(duplicate);
             }
