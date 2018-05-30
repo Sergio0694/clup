@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics;
 using clup.Core;
 using clup.Options;
 using CommandLine;
@@ -22,7 +21,7 @@ namespace clup
 #if DEBUG
             catch (Exception e)
             {
-                e.Demystify();
+                System.Diagnostics.ExceptionExtentions.Demystify(e);
                 Console.WriteLine($"{e.StackTrace}{Environment.NewLine}{e.GetType()} - {e.Message}");
             }
 #else
