@@ -2,14 +2,14 @@
 
 [![NuGet](https://img.shields.io/nuget/v/clup.svg)](https://www.nuget.org/packages/clup/) [![NuGet](https://img.shields.io/nuget/dt/clup.svg)](https://www.nuget.org/stats/packages/clup?groupby=Version) [![Twitter Follow](https://img.shields.io/twitter/follow/Sergio0694.svg?style=flat&label=Follow)](https://twitter.com/SergioPedri)
 
-A .NET Core 2.0 CLI tool to easily remove duplicate files.
+A .NET Core 2.1 CLI tool to easily remove duplicate files.
 
 ## Installing from DotGet
 
-To install **clup**, first make sure to have [.NET Core](https://www.microsoft.com/net/download/core) and [DotGet](https://github.com/tonerdo/dotget) installed. After that, just run this command:
+Make sure to get the [.NET Core 2.1 Runtime](https://www.microsoft.com/net/download/dotnet-core/runtime-2.1.0), then just run this command:
 
 ```
-dotnet get install clup
+dotnet tool install clup -g
 ```
 
 And that's it, you're ready to go!
