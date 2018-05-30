@@ -7,6 +7,7 @@ using System.Linq;
 using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
+using clup.Enums;
 using clup.Options;
 using JetBrains.Annotations;
 
@@ -102,12 +103,24 @@ namespace clup.Core
             ConcurrentDictionary<string, List<string>> map = new ConcurrentDictionary<string, List<string>>();
             Parallel.ForEach(files, file =>
             {
+                // Compute the MD5 hash
                 using (MD5 md5 = MD5.Create())
                 using (FileStream stream = File.OpenRead(file))
                 {
                     byte[] hash = md5.ComputeHash(stream);
                     string hex = BitConverter.ToString(hash);
-                    map.AddOrUpdate(hex, new List<string> { file }, (_, list) =>
+
+                    // Get the actual key for the current file
+                    string key;
+                    switch (options.Mode)
+                    {
+                        case MatchMode.MD5AndExtension: key = $"{hex}{Path.GetExtension(file)}"; break;
+                        case MatchMode.MD5AndFilename: key = $"{hex}{file}"; break;
+                        default: key = hex; break;
+                    }
+
+                    // Update the mapping
+                    map.AddOrUpdate(key, new List<string> { file }, (_, list) =>
                     {
                         list.Add(file);
                         return list;
