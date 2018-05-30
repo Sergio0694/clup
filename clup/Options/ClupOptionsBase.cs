@@ -13,25 +13,25 @@ namespace clup.Options
     /// </summary>
     internal abstract class ClupOptionsBase
     {
-        [Option("include", HelpText = "The list of file extensions to look for when scanning the target directory. If not specified, all existing files will be analyzed.", Required = false, Separator = ',')]
+        [Option('i', "include", HelpText = "The list of file extensions to look for when scanning the target directory. If not specified, all existing files will be analyzed.", Required = false, Separator = ',')]
         public IEnumerable<string> FileExtensions { get; set; }
 
-        [Option("exclude", HelpText = "The list of optional file extensions to filter out, when no other file extensions are specified", Required = false, Separator = ',')]
+        [Option('e', "exclude", HelpText = "The list of optional file extensions to filter out, when no other file extensions are specified", Required = false, Separator = ',')]
         public IEnumerable<string> FileExclusions { get; set; }
 
-        [Option(Default = 0, HelpText = "The minimum size of files to be analyzed.", Required = false)]
+        [Option('m', "minsize", Default = 0, HelpText = "The minimum size of files to be analyzed.", Required = false)]
         public long MinSize { get; set; }
 
-        [Option(Default = 104_857_600, HelpText = "The maximum size of files to be analyzed", Required = false)]
+        [Option('M', "maxsize", Default = 104_857_600, HelpText = "The maximum size of files to be analyzed", Required = false)]
         public long MaxSize { get; set; }
 
-        [Option(Default = MatchMode.MD5, HelpText = "The desired mode to match duplicate files", Required = false)]
-        public MatchMode Mode { get; set; }
+        [Option('h', "match", Default = MatchMode.MD5, HelpText = "The desired mode to match duplicate files", Required = false)]
+        public MatchMode Match { get; set; }
 
-        [Option("source", HelpText = "The source directory to use to look for duplicates", Required = true)]
+        [Option('s', "source", HelpText = "The source directory to use to look for duplicates", Required = true)]
         public string SourceDirectory { get; set; }
 
-        [Option("beep", Default = false, HelpText = "Play a sound when the requested operation completes.", Required = false)]
+        [Option('b', "beep", Default = false, HelpText = "Play a sound when the requested operation completes.", Required = false)]
         public bool Beep { get; set; }
 
         /// <summary>

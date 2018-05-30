@@ -122,7 +122,7 @@ namespace clup.Core
 
                                 // Get the actual key for the current file
                                 string key;
-                                switch (options.Mode)
+                                switch (options.Match)
                                 {
                                     case MatchMode.MD5AndExtension: key = $"{hex}{Path.GetExtension(file)}"; break;
                                     case MatchMode.MD5AndFilename: key = $"{hex}{file}"; break;
@@ -199,7 +199,7 @@ namespace clup.Core
                 }
                 writer.WriteLine($"--minsize={options.MinSize}");
                 writer.WriteLine($"--maxsize={options.MaxSize}");
-                writer.WriteLine($"--mode={options.Mode}");
+                writer.WriteLine($"--mode={options.Match}");
                 writer.WriteLine("========");
                 foreach (string duplicate in duplicates) writer.WriteLine(duplicate);
             }
