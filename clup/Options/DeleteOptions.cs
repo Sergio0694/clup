@@ -8,7 +8,7 @@ namespace clup.Options
     [Verb("delete", HelpText = "Automatically delete the duplicate files that are found in the target directory")]
     internal sealed class DeleteOptions : ClupOptionsBase
     {
-        [Option(HelpText = "An optional directory to use to store a log file", Required = false)]
-        public string LogDir { get; set; }
+        [Option("logdir", HelpText = "An optional directory to use to store a log file", Required = false)]
+        public string LogDirectory { get; set; }
     }
 }

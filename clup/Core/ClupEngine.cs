@@ -26,7 +26,7 @@ namespace clup.Core
         /// <param name="options">The command options</param>
         public static void Run(DeleteOptions options)
         {
-            if (string.IsNullOrEmpty(options.LogDir)) Run(options, File.Delete);
+            if (string.IsNullOrEmpty(options.LogDirectory)) Run(options, File.Delete);
             else
             {
                 ConcurrentQueue<string> deletions = new ConcurrentQueue<string>();
@@ -35,6 +35,7 @@ namespace clup.Core
                     deletions.Enqueue(path);
                     File.Delete(path);
                 });
+                WriteLog(options.LogDirectory, options, deletions);
             }
         }
 
@@ -64,26 +65,12 @@ namespace clup.Core
             Run(options, path => duplicates.Enqueue(path));
 
             // Write the log to disk
-            string logfile = Path.Combine(options.TargetDirectory ?? options.SourceDirectory, $"logfile_{DateTime.Now:yyyy-mm-dd[hh-mm-ss]}.txt");
-            using (StreamWriter writer = File.CreateText(logfile))
-            {
-                writer.WriteLine("========");
-                writer.WriteLine(options.SourceDirectory);
-                string[] extensions = options.FileExtensions.ToArray();
-                if (extensions.Length > 0)
-                {
-                    string args = extensions.Length == 1 ? extensions[0] : $"{extensions[0]}{extensions.Skip(1).Aggregate(string.Empty, (seed, value) => $"{seed},{value}")}";
-                    writer.WriteLine($"--extensions={args}");
-                }
-                writer.WriteLine($"--minsize={options.MinSize}");
-                writer.WriteLine($"--maxsize={options.MaxSize}");
-                writer.WriteLine($"--mode={options.Mode}");
-                writer.WriteLine("========");
-                foreach (string duplicate in duplicates) writer.WriteLine(duplicate);
-            }
+            WriteLog(options.TargetDirectory ?? options.SourceDirectory, options, duplicates);
         }
 
         #endregion
+
+        #region Implementation
 
         // Executes the requested command
         private static void Run([NotNull] ClupOptionsBase options, [NotNull] Action<string> handler)
@@ -123,35 +110,35 @@ namespace clup.Core
                     // Compute the MD5 hash
                     if (exclusions.Count > 0 && exclusions.Contains(Path.GetExtension(file))) return;
                     using (MD5 md5 = MD5.Create())
-                    try
-                    {
-                        using (FileStream stream = File.OpenRead(file))
+                        try
                         {
-                            byte[] hash = md5.ComputeHash(stream);
-                            string hex = BitConverter.ToString(hash);
-
-                            // Get the actual key for the current file
-                            string key;
-                            switch (options.Mode)
+                            using (FileStream stream = File.OpenRead(file))
                             {
-                                case MatchMode.MD5AndExtension: key = $"{hex}{Path.GetExtension(file)}"; break;
-                                case MatchMode.MD5AndFilename: key = $"{hex}{file}"; break;
-                                default: key = hex; break;
+                                byte[] hash = md5.ComputeHash(stream);
+                                string hex = BitConverter.ToString(hash);
+
+                                // Get the actual key for the current file
+                                string key;
+                                switch (options.Mode)
+                                {
+                                    case MatchMode.MD5AndExtension: key = $"{hex}{Path.GetExtension(file)}"; break;
+                                    case MatchMode.MD5AndFilename: key = $"{hex}{file}"; break;
+                                    default: key = hex; break;
+                                }
+
+                                // Update the mapping
+                                map.AddOrUpdate(key, new List<string> { file }, (_, list) =>
+                                {
+                                    list.Add(file);
+                                    return list;
+                                });
+                                progressBar.Report((double)Interlocked.Increment(ref i) / files.Length);
                             }
-
-                            // Update the mapping
-                            map.AddOrUpdate(key, new List<string> { file }, (_, list) =>
-                            {
-                                list.Add(file);
-                                return list;
-                            });
-                            progressBar.Report((double)Interlocked.Increment(ref i) / files.Length);
                         }
-                    }
-                    catch (Exception e) when (e is IOException || e is UnauthorizedAccessException)
-                    {
-                        // Just ignore
-                    }
+                        catch (Exception e) when (e is IOException || e is UnauthorizedAccessException)
+                        {
+                            // Just ignore
+                        }
                 });
             }
 
@@ -191,5 +178,29 @@ namespace clup.Core
                 $"Duplicates found/deleted: {processed}{Environment.NewLine}" +
                 $"Bytes (potentially) saved: {bytes}");
         }
+
+        // Writes a complete log of the processed duplicates to the specified directory
+        private static void WriteLog([NotNull] string path, [NotNull] ClupOptionsBase options, [NotNull, ItemNotNull] IEnumerable<string> duplicates)
+        {
+            string logfile = Path.Combine(path, $"logfile_{DateTime.Now:yyyy-mm-dd[hh-mm-ss]}.txt");
+            using (StreamWriter writer = File.CreateText(logfile))
+            {
+                writer.WriteLine("========");
+                writer.WriteLine(options.SourceDirectory);
+                string[] extensions = options.FileExtensions.ToArray();
+                if (extensions.Length > 0)
+                {
+                    string args = extensions.Length == 1 ? extensions[0] : $"{extensions[0]}{extensions.Skip(1).Aggregate(string.Empty, (seed, value) => $"{seed},{value}")}";
+                    writer.WriteLine($"--extensions={args}");
+                }
+                writer.WriteLine($"--minsize={options.MinSize}");
+                writer.WriteLine($"--maxsize={options.MaxSize}");
+                writer.WriteLine($"--mode={options.Mode}");
+                writer.WriteLine("========");
+                foreach (string duplicate in duplicates) writer.WriteLine(duplicate);
+            }
+        }
+
+        #endregion
     }
 }
