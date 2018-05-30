@@ -16,7 +16,7 @@ namespace clup.Options
         [Option("extensions", HelpText = "The list of file extensions to look for when scanning the target directory. If not specified, all existing files will be analyzed.", Required = false, Separator = ',')]
         public IEnumerable<string> FileExtensions { get; set; }
 
-        [Option("exclude", HelpText = "The list of optional file extensions to filter out, when no other file extensions are specified", Required = false)]
+        [Option("exclude", HelpText = "The list of optional file extensions to filter out, when no other file extensions are specified", Required = false, Separator = ',')]
         public IEnumerable<string> FileExclusions { get; set; }
 
         [Option(Default = 0, HelpText = "The minimum size of files to be analyzed.", Required = false)]
