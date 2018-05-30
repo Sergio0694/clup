@@ -31,6 +31,9 @@ namespace clup.Options
         [Option("source", HelpText = "The source directory to use to look for duplicates", Required = true)]
         public string SourceDirectory { get; set; }
 
+        [Option("beep", Default = false, HelpText = "Play a sound when the requested operation completes.", Required = false)]
+        public bool Beep { get; set; }
+
         /// <summary>
         /// Executes a preliminary validation of the current instance
         /// </summary>

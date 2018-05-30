@@ -37,6 +37,7 @@ namespace clup.Core
                 });
                 WriteLog(options.LogDirectory, options, deletions);
             }
+            if (options.Beep) Console.Beep();
         }
 
         /// <summary>
@@ -52,6 +53,7 @@ namespace clup.Core
             }
 
             Run(options, Handler);
+            if (options.Beep) Console.Beep();
         }
 
         /// <summary>
@@ -66,6 +68,7 @@ namespace clup.Core
 
             // Write the log to disk
             WriteLog(options.TargetDirectory ?? options.SourceDirectory, options, duplicates);
+            if (options.Beep) Console.Beep();
         }
 
         #endregion
