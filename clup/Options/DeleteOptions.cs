@@ -10,8 +10,5 @@ namespace clup.Options
     {
         [Option(HelpText = "An optional directory to use to store a log file", Required = false)]
         public string LogDir { get; set; }
-
-        [Option(Default = false, HelpText = "Indicates whether or not to permanently remove duplicate files", Required = false)]
-        public bool SkipRecycleBin { get; set; }
     }
 }

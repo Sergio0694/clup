@@ -12,9 +12,10 @@ namespace clup
             try
             {
                 // Try to execute the requested action
-                return Parser.Default.ParseArguments<DeleteOptions, MoveOptions>(args).MapResult(
+                return Parser.Default.ParseArguments<DeleteOptions, MoveOptions, ListOptions>(args).MapResult(
                     (DeleteOptions options) => { ClupEngine.Run(options); return 0; },
                     (MoveOptions options) => 0,
+                    (ListOptions options) => 0,
                     errors => 1);
             }
 #if DEBUG
