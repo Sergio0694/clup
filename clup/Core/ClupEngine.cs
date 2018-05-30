@@ -99,39 +99,45 @@ namespace clup.Core
             options.Validate();
 
             // Prepare the files query
+            Console.WriteLine("Querying files...");
             string[] extensions = options.FileExtensions.ToArray();
-            string pattern = extensions.Length == 0 ? string.Empty : $"*.{extensions[0]}{extensions.Skip(1).Aggregate(string.Empty, (seed, value) => $"{seed} OR *.{value}")}";
+            string pattern = extensions.Length == 0 ? "*" : $"*.{extensions[0]}{extensions.Skip(1).Aggregate(string.Empty, (seed, value) => $"{seed} OR *.{value}")}";
             string[] files = Directory.EnumerateFiles(options.SourceDirectory, pattern, SearchOption.AllDirectories).ToArray();
 
             // Initialize the mapping between each target file and its MD5 hash
             Console.WriteLine("Preprocessing files...");
             ConcurrentDictionary<string, List<string>> map = new ConcurrentDictionary<string, List<string>>();
-            Parallel.ForEach(files, file =>
+            using (AsciiProgressBar progressBar = new AsciiProgressBar())
             {
-                // Compute the MD5 hash
-                using (MD5 md5 = MD5.Create())
-                using (FileStream stream = File.OpenRead(file))
+                int i = 0;
+                Parallel.ForEach(files, file =>
                 {
-                    byte[] hash = md5.ComputeHash(stream);
-                    string hex = BitConverter.ToString(hash);
-
-                    // Get the actual key for the current file
-                    string key;
-                    switch (options.Mode)
+                    // Compute the MD5 hash
+                    using (MD5 md5 = MD5.Create())
+                    using (FileStream stream = File.OpenRead(file))
                     {
-                        case MatchMode.MD5AndExtension: key = $"{hex}{Path.GetExtension(file)}"; break;
-                        case MatchMode.MD5AndFilename: key = $"{hex}{file}"; break;
-                        default: key = hex; break;
+                        byte[] hash = md5.ComputeHash(stream);
+                        string hex = BitConverter.ToString(hash);
+
+                        // Get the actual key for the current file
+                        string key;
+                        switch (options.Mode)
+                        {
+                            case MatchMode.MD5AndExtension: key = $"{hex}{Path.GetExtension(file)}"; break;
+                            case MatchMode.MD5AndFilename: key = $"{hex}{file}"; break;
+                            default: key = hex; break;
+                        }
+
+                        // Update the mapping
+                        map.AddOrUpdate(key, new List<string> { file }, (_, list) =>
+                        {
+                            list.Add(file);
+                            return list;
+                        });
+                        progressBar.Report((double)Interlocked.Increment(ref i) / files.Length);
                     }
-
-                    // Update the mapping
-                    map.AddOrUpdate(key, new List<string> { file }, (_, list) =>
-                    {
-                        list.Add(file);
-                        return list;
-                    });
-                }
-            });
+                });
+            }
 
             // Process each duplicate file that has been found
             Console.WriteLine("Processing duplicates...");
@@ -157,8 +163,7 @@ namespace clup.Core
                     // Update the statistics
                     Interlocked.Add(ref processed, duplicates.Count - 1);
                     Interlocked.Add(ref bytes, filesize * (duplicates.Count - 1));
-                    int _i = Interlocked.Increment(ref i);
-                    progressBar.Report((double)_i / count);
+                    progressBar.Report((double)Interlocked.Increment(ref i) / count);
                 });
             }
 
