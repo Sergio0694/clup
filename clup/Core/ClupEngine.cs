@@ -112,7 +112,7 @@ namespace clup.Core
             }
 
             // Initialize the mapping between each target file and its MD5 hash
-            Console.Write($"Preprocessing {files.Length}files...");
+            Console.Write($"Preprocessing {files.Length} files... ");
             ConcurrentDictionary<string, List<string>> map = new ConcurrentDictionary<string, List<string>>();
             using (AsciiProgressBar progressBar = new AsciiProgressBar())
             {
@@ -147,7 +147,7 @@ namespace clup.Core
             }
 
             // Process each duplicate file that has been found
-            Console.Write($"{Environment.NewLine}Processing duplicates...");
+            Console.Write($"{Environment.NewLine}Processing duplicates... ");
             using (AsciiProgressBar progressBar = new AsciiProgressBar())
             {
                 int i = 0, count = map.Values.Count;

@@ -24,7 +24,6 @@ namespace clup
             {
                 e.Demystify();
                 Console.WriteLine($"{e.StackTrace}{Environment.NewLine}{e.GetType()} - {e.Message}");
-                Console.ReadKey();
             }
 #else
             catch
