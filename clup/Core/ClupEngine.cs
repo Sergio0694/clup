@@ -103,9 +103,15 @@ namespace clup.Core
             string[] extensions = options.FileExtensions.ToArray();
             string pattern = extensions.Length == 0 ? "*" : $"*.{extensions[0]}{extensions.Skip(1).Aggregate(string.Empty, (seed, value) => $"{seed} OR *.{value}")}";
             string[] files = Directory.EnumerateFiles(options.SourceDirectory, pattern, SearchOption.AllDirectories).ToArray();
+            if (files.Length < 2)
+            {
+                stopwatch.Stop();
+                Console.WriteLine("No files were found in the source directory");
+                return;
+            }
 
             // Initialize the mapping between each target file and its MD5 hash
-            Console.WriteLine("Preprocessing files...");
+            Console.Write($"Preprocessing {files.Length}files...");
             ConcurrentDictionary<string, List<string>> map = new ConcurrentDictionary<string, List<string>>();
             using (AsciiProgressBar progressBar = new AsciiProgressBar())
             {
@@ -140,7 +146,7 @@ namespace clup.Core
             }
 
             // Process each duplicate file that has been found
-            Console.WriteLine("Processing duplicates...");
+            Console.Write($"{Environment.NewLine}Processing duplicates...");
             using (AsciiProgressBar progressBar = new AsciiProgressBar())
             {
                 int i = 0, count = map.Values.Count;
@@ -170,7 +176,7 @@ namespace clup.Core
             // Display the statistics
             stopwatch.Stop();
             Console.WriteLine(
-                $"==== DONE ===={Environment.NewLine}" +
+                $"{Environment.NewLine}==== DONE ===={Environment.NewLine}" +
                 $"Elapsed time: {stopwatch.Elapsed:g}{Environment.NewLine}" +
                 $"Duplicates found/deleted: {processed}{Environment.NewLine}" +
                 $"Bytes (potentially) saved: {bytes}");
