@@ -9,6 +9,6 @@ namespace clup.Options
     internal sealed class MoveOptions : ClupOptionsBase
     {
         [Option("target", HelpText = "The target directory to use to move duplicate files", Required = true)]
-        public string TargetDir { get; set; }
+        public string TargetDirectory { get; set; }
     }
 }

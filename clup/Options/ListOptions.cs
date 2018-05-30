@@ -9,6 +9,6 @@ namespace clup.Options
     internal sealed class ListOptions : ClupOptionsBase
     {
         [Option("target", HelpText = "The target directory to use to create the list file. If not specified, the source directory will be used.", Required = false)]
-        public string TargetDir { get; set; }
+        public string TargetDirectory { get; set; }
     }
 }

@@ -47,7 +47,7 @@ namespace clup.Core
             void Handler(string path)
             {
                 string filename = Path.GetFileName(path);
-                File.Move(path, Path.Combine(options.TargetDir, filename));
+                File.Move(path, Path.Combine(options.TargetDirectory, filename));
             }
 
             Run(options, Handler);
@@ -64,14 +64,17 @@ namespace clup.Core
             Run(options, path => duplicates.Enqueue(path));
 
             // Write the log to disk
-            string logfile = Path.Combine(options.TargetDir, $"logfile_{DateTime.Now:yyyy-mm-dd[hh-mm-ss]}.txt");
+            string logfile = Path.Combine(options.TargetDirectory ?? options.SourceDirectory, $"logfile_{DateTime.Now:yyyy-mm-dd[hh-mm-ss]}.txt");
             using (StreamWriter writer = File.CreateText(logfile))
             {
                 writer.WriteLine("========");
                 writer.WriteLine(options.SourceDirectory);
                 string[] extensions = options.FileExtensions.ToArray();
-                string args = extensions.Length == 1 ? extensions[0] : $"{extensions[0]}{extensions.Skip(1).Aggregate(string.Empty, (seed, value) => $"{seed},{value}")}";
-                writer.WriteLine($"--extensions={args}");
+                if (extensions.Length > 0)
+                {
+                    string args = extensions.Length == 1 ? extensions[0] : $"{extensions[0]}{extensions.Skip(1).Aggregate(string.Empty, (seed, value) => $"{seed},{value}")}";
+                    writer.WriteLine($"--extensions={args}");
+                }
                 writer.WriteLine($"--minsize={options.MinSize}");
                 writer.WriteLine($"--maxsize={options.MaxSize}");
                 writer.WriteLine($"--mode={options.Mode}");
@@ -97,7 +100,7 @@ namespace clup.Core
 
             // Prepare the files query
             string[] extensions = options.FileExtensions.ToArray();
-            string pattern = extensions.Length == 1 ? extensions[0] : $"*.{extensions[0]}{extensions.Skip(1).Aggregate(string.Empty, (seed, value) => $"{seed} OR *.{value}")}";
+            string pattern = extensions.Length == 0 ? string.Empty : $"*.{extensions[0]}{extensions.Skip(1).Aggregate(string.Empty, (seed, value) => $"{seed} OR *.{value}")}";
             string[] files = Directory.EnumerateFiles(options.SourceDirectory, pattern, SearchOption.AllDirectories).ToArray();
 
             // Initialize the mapping between each target file and its MD5 hash
@@ -162,9 +165,9 @@ namespace clup.Core
             // Display the statistics
             stopwatch.Stop();
             Console.WriteLine(
-                "==== DONE ====\n" +
-                $"Elapsed time: {stopwatch.Elapsed:hh:mm:ss}" +
-                $"Duplicates found/deleted: {processed}" +
+                $"==== DONE ===={Environment.NewLine}" +
+                $"Elapsed time: {stopwatch.Elapsed:g}{Environment.NewLine}" +
+                $"Duplicates found/deleted: {processed}{Environment.NewLine}" +
                 $"Bytes (potentially) saved: {bytes}");
         }
     }
