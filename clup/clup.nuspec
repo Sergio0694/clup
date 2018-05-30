@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<package>
+  <metadata>
+    <id>clup</id>
+    <version>1.0.2</version>
+    <title>clup</title>
+    <authors>Sergio Pedri</authors>
+    <owners>Sergio Pedri</owners>
+    <licenseUrl>https://github.com/Sergio0694/clup/blob/master/LICENSE</licenseUrl>
+    <projectUrl>https://github.com/Sergio0694/clup</projectUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>A no-nonsense duplicate files remover CLI tool, targeting .NET Core</description>
+    <copyright>Copyright (c) 2018 Sergio Pedri</copyright>
+    <tags>net csharp cli nuget dotget tool netcore netstandard dotnet</tags>
+  </metadata>
+  <files>
+    <file src="bin\Release\netcoreapp2.0\publish\**\*" target="tools\netcoreapp2.0\" />
+  </files>
+</package>
