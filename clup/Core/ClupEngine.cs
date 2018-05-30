@@ -4,15 +4,81 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
-using System.Text;
 using System.Threading.Tasks;
 using clup.Options;
 using JetBrains.Annotations;
 
 namespace clup.Core
 {
+    /// <summary>
+    /// The core class that contains the actual logic of the clup executable
+    /// </summary>
     internal static class ClupEngine
     {
+        #region APIs
+
+        /// <summary>
+        /// Executes the delete command, and logs the deleted files if requested
+        /// </summary>
+        /// <param name="options">The command options</param>
+        public static void Run(DeleteOptions options)
+        {
+            if (string.IsNullOrEmpty(options.LogDir)) Run(options, File.Delete);
+            else
+            {
+                ConcurrentQueue<string> deletions = new ConcurrentQueue<string>();
+                Run(options, path =>
+                {
+                    deletions.Enqueue(path);
+                    File.Delete(path);
+                });
+            }
+        }
+
+        /// <summary>
+        /// Executes the move command
+        /// </summary>
+        /// <param name="options">The command options</param>
+        public static void Run(MoveOptions options)
+        {
+            void Handler(string path)
+            {
+                string filename = Path.GetFileName(path);
+                File.Move(path, Path.Combine(options.TargetDir, filename));
+            }
+
+            Run(options, Handler);
+        }
+
+        /// <summary>
+        /// Executes the list command
+        /// </summary>
+        /// <param name="options">The command options</param>
+        public static void Run(ListOptions options)
+        {
+            // Find the duplicate files
+            ConcurrentQueue<string> duplicates = new ConcurrentQueue<string>();
+            Run(options, path => duplicates.Enqueue(path));
+
+            // Write the log to disk
+            string logfile = Path.Combine(options.TargetDir, $"logfile_{DateTime.Now:yyyy-mm-dd[hh-mm-ss]}.txt");
+            using (StreamWriter writer = File.CreateText(logfile))
+            {
+                writer.WriteLine("========");
+                writer.WriteLine(options.SourceDirectory);
+                string[] extensions = options.FileExtensions.ToArray();
+                string args = extensions.Length == 1 ? extensions[0] : $"{extensions[0]}{extensions.Skip(1).Aggregate(string.Empty, (seed, value) => $"{seed},{value}")}";
+                writer.WriteLine($"--extensions={args}");
+                writer.WriteLine($"--minsize={options.MinSize}");
+                writer.WriteLine($"--maxsize={options.MaxSize}");
+                writer.WriteLine($"--mode={options.Mode}");
+                writer.WriteLine("========");
+                foreach (string duplicate in duplicates) writer.WriteLine(duplicate);
+            }
+        }
+
+        #endregion
+
         private static void Run([NotNull] ClupOptionsBase options, [NotNull] Action<string> handler)
         {
             // Initial arguments validation
@@ -20,7 +86,7 @@ namespace clup.Core
 
             // Prepare the files query
             string[] extensions = options.FileExtensions.ToArray();
-            string pattern = $"*.{extensions[0]}{extensions.Skip(1).Aggregate(string.Empty, (seed, value) => $"{seed} OR *.{value}")}";
+            string pattern = extensions.Length == 1 ? extensions[0] : $"*.{extensions[0]}{extensions.Skip(1).Aggregate(string.Empty, (seed, value) => $"{seed} OR *.{value}")}";
             string[] files = Directory.EnumerateFiles(options.SourceDirectory, pattern, SearchOption.AllDirectories).ToArray();
 
             // Initialize the mapping between each target file and its MD5 hash
@@ -56,24 +122,6 @@ namespace clup.Core
                     }
                 }
             });
-        }
-
-        /// <summary>
-        /// Executes the delete command, and logs the deleted files if requested
-        /// </summary>
-        /// <param name="options">The command options</param>
-        public static void Run(DeleteOptions options)
-        {
-            if (string.IsNullOrEmpty(options.LogDir)) Run(options, File.Delete);
-            else
-            {
-                ConcurrentQueue<string> deletions = new ConcurrentQueue<string>();
-                Run(options, path =>
-                {
-                    deletions.Enqueue(path);
-                    File.Delete(path);
-                });
-            }
         }
     }
 }

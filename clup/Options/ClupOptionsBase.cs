@@ -42,6 +42,7 @@ namespace clup.Options
             if (string.IsNullOrEmpty(SourceDirectory)) throw new ArgumentException("The source directory can't be empty");
             invalid = Path.GetInvalidPathChars();
             if (SourceDirectory.Any(c => invalid.Contains(c))) throw new ArgumentException("The source directory isn't valid");
+            if (!Directory.Exists(SourceDirectory)) throw new ArgumentException("The source directory doesn't exist");
         }
     }
 }
