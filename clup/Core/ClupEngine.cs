@@ -155,7 +155,7 @@ namespace clup.Core
                     Interlocked.Add(ref processed, duplicates.Count - 1);
                     Interlocked.Add(ref bytes, filesize * (duplicates.Count - 1));
                     int _i = Interlocked.Increment(ref i);
-                    progressBar.Report((double)i / count);
+                    progressBar.Report((double)_i / count);
                 });
             }
 
