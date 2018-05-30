@@ -8,7 +8,7 @@ namespace clup.Options
     [Verb("list", HelpText = "Find duplicate files and list them into a text file in the specified directory")]
     internal sealed class ListOptions : ClupOptionsBase
     {
-        [Value(1, HelpText = "The target directory to use to create the list file", Required = true)]
+        [Option("target", HelpText = "The target directory to use to create the list file", Required = true)]
         public string TargetDir { get; set; }
     }
 }

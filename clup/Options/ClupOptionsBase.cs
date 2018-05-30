@@ -25,7 +25,7 @@ namespace clup.Options
         [Option(Default = MatchMode.MD5, HelpText = "The desired mode to match duplicate files", Required = false)]
         public MatchMode Mode { get; set; }
 
-        [Value(0, HelpText = "The source directory to use to look for duplicates", Required = true)]
+        [Option("source", HelpText = "The source directory to use to look for duplicates", Required = true)]
         public string SourceDirectory { get; set; }
 
         /// <summary>
@@ -37,7 +37,7 @@ namespace clup.Options
             char[] invalid = Path.GetInvalidFileNameChars();
             if (FileExtensions?.Any(ext => ext.Any(c => invalid.Contains(c))) == true)
                 throw new ArgumentException("One or more file extensions are not valid");
-            if (MinSize <= 0) throw new ArgumentException("The minimum file size must be a positive number");
+            if (MinSize < 0) throw new ArgumentException("The minimum file size must be a positive number");
             if (MaxSize <= MinSize) throw new ArgumentException("The maximum size must be greater than the minimum size");
             if (string.IsNullOrEmpty(SourceDirectory)) throw new ArgumentException("The source directory can't be empty");
             invalid = Path.GetInvalidPathChars();
