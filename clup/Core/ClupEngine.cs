@@ -101,8 +101,9 @@ namespace clup.Core
             // Prepare the files query
             Console.WriteLine("Querying files...");
             string[] extensions = options.FileExtensions.ToArray();
-            string pattern = extensions.Length == 0 ? "*" : $"*.{extensions[0]}{extensions.Skip(1).Aggregate(string.Empty, (seed, value) => $"{seed} OR *.{value}")}";
-            string[] files = Directory.EnumerateFiles(options.SourceDirectory, pattern, SearchOption.AllDirectories).ToArray();
+            string[] files = (extensions.Length == 0
+                ? Directory.EnumerateFiles(options.SourceDirectory, "*", SearchOption.AllDirectories)
+                : extensions.SelectMany(extension => Directory.EnumerateFiles(options.SourceDirectory, $"*.{extension}", SearchOption.AllDirectories))).ToArray();
             if (files.Length < 2)
             {
                 stopwatch.Stop();
