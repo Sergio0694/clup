@@ -23,8 +23,8 @@ While they share most of the available options, the main difference is that `del
 Other options include:
 * `minsize` and `maxsize`: used to specify a min/max size (in bytes) for the files to be processed and deleted
 * `mode`: to indicate whether to just use the MD5 hash of the files contents to check for duplicates, or to also include the files extensions or complete filenames.
-* `extensions`: a list of file extensions to use to filter the files in the source directory
-* `exclude`: an optional list of file extensions to ignore (this option and `extensions` are mutually exclusive)
+* `include`: a list of file extensions to use to filter the files in the source directory
+* `exclude`: an optional list of file extensions to ignore (this option and `include` are mutually exclusive)
 
 ## Dependencies
 
