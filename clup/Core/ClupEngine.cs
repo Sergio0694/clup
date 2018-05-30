@@ -13,14 +13,17 @@ namespace clup.Core
 {
     internal static class ClupEngine
     {
-        public static void Foo([NotNull] DeleteOptions options)
+        private static void Run([NotNull] ClupOptionsBase options, [NotNull] Action<string> handler)
         {
+            // Initial arguments validation
             options.Validate();
 
+            // Prepare the files query
             string[] extensions = options.FileExtensions.ToArray();
             string pattern = $"*.{extensions[0]}{extensions.Skip(1).Aggregate(string.Empty, (seed, value) => $"{seed} OR *.{value}")}";
             string[] files = Directory.EnumerateFiles(options.SourceDirectory, pattern, SearchOption.AllDirectories).ToArray();
 
+            // Initialize the mapping between each target file and its MD5 hash
             ConcurrentDictionary<string, List<string>> map = new ConcurrentDictionary<string, List<string>>();
             Parallel.ForEach(files, file =>
             {
@@ -37,6 +40,7 @@ namespace clup.Core
                 }
             });
 
+            // Process each duplicate file that has been found
             Parallel.ForEach(map.Values, duplicates =>
             {
                 if (duplicates.Count < 2) return;
@@ -44,14 +48,32 @@ namespace clup.Core
                 foreach (string duplicate in duplicates.Skip(1))
                 {
                     long creation = File.GetCreationTimeUtc(duplicate).Ticks;
-                    if (creation >= ticks) File.Delete(duplicate);
+                    if (creation >= ticks) handler(duplicate);
                     else
                     {
-                        File.Delete(path);
+                        handler(path);
                         (ticks, path) = (creation, duplicate);
                     }
                 }
             });
+        }
+
+        /// <summary>
+        /// Executes the delete command, and logs the deleted files if requested
+        /// </summary>
+        /// <param name="options">The command options</param>
+        public static void Run(DeleteOptions options)
+        {
+            if (string.IsNullOrEmpty(options.LogDir)) Run(options, File.Delete);
+            else
+            {
+                ConcurrentQueue<string> deletions = new ConcurrentQueue<string>();
+                Run(options, path =>
+                {
+                    deletions.Enqueue(path);
+                    File.Delete(path);
+                });
+            }
         }
     }
 }
