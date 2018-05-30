@@ -13,6 +13,7 @@
     <RepositoryUrl>https://github.com/Sergio0694/clup</RepositoryUrl>
     <PackageTags>net, csharp, cli, nuget, dotget, tool, netcore, netstandard, dotnet</PackageTags>
     <PackageReleaseNotes>Initial release</PackageReleaseNotes>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
   </PropertyGroup>
 
   <ItemGroup>
