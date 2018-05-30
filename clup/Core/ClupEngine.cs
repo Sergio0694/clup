@@ -177,14 +177,22 @@ namespace clup.Core
 
             // Display the statistics
             stopwatch.Stop();
+            Console.Write(Environment.NewLine);
+            foreach (string info in new[]
+            {
+                $"Elapsed time: \t\t{stopwatch.Elapsed:g}{Environment.NewLine}",
+                $"Duplicates found: \t{processed}{Environment.NewLine}",
+                $"Bytes identified: \t{bytes}{Environment.NewLine}",
+                $"Approximate size: \t{bytes.ToFileSizeString()}"
+            })
+            {
+                Console.ForegroundColor = ConsoleColor.DarkCyan;
+                Console.Write("[INFO] ");
+                Console.ForegroundColor = ConsoleColor.White;
+                Console.Write(info);
+            }
             Console.ForegroundColor = ConsoleColor.DarkGreen;
             Console.WriteLine($"{Environment.NewLine}==== DONE ====");
-            Console.ForegroundColor = ConsoleColor.White;
-            Console.WriteLine(
-                $"Elapsed time: {stopwatch.Elapsed:g}{Environment.NewLine}" +
-                $"Duplicates found/deleted: {processed}{Environment.NewLine}" +
-                $"Bytes identified: {bytes}{Environment.NewLine}" +
-                $"Approximate size: {bytes.ToFileSizeString()}");
         }
 
         // Writes a complete log of the processed duplicates to the specified directory

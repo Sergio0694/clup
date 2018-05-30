@@ -39,17 +39,24 @@ namespace clup
             }
 #endif
 
-            // Notify and return
+            // Error feedback
+            if (code != 0)
+            {
+                Console.ForegroundColor = ConsoleColor.DarkRed;
+                Console.WriteLine($"{Environment.NewLine}==== ERROR ====");
+            }
+            Console.ForegroundColor = color; // Reset to the default color
+
+            // Sound notification
             if (beep)
             {
                 if (code == 0)
                 {
-                    Console.Beep(); Thread.Sleep(200); Console.Beep(); // Two high-pitched beeps to indicate success
+                    Console.Beep(); Thread.Sleep(150); Console.Beep(); // Two high-pitched beeps to indicate success
                 }
                 else Console.Beep(320, 500);
             }
 
-            Console.ForegroundColor = color; // Reset to the default color
             return code;
         }
     }
