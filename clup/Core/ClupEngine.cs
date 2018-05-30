@@ -90,6 +90,7 @@ namespace clup.Core
             stopwatch.Start();
             int processed = 0;
             long bytes = 0;
+            Console.WriteLine("==== START ====");
 
             // Initial arguments validation
             options.Validate();
@@ -100,6 +101,7 @@ namespace clup.Core
             string[] files = Directory.EnumerateFiles(options.SourceDirectory, pattern, SearchOption.AllDirectories).ToArray();
 
             // Initialize the mapping between each target file and its MD5 hash
+            Console.WriteLine("Preprocessing files...");
             ConcurrentDictionary<string, List<string>> map = new ConcurrentDictionary<string, List<string>>();
             Parallel.ForEach(files, file =>
             {
@@ -129,26 +131,33 @@ namespace clup.Core
             });
 
             // Process each duplicate file that has been found
-            Parallel.ForEach(map.Values, duplicates =>
+            Console.WriteLine("Processing duplicates...");
+            using (AsciiProgressBar progressBar = new AsciiProgressBar())
             {
-                if (duplicates.Count < 2) return;
-                long filesize = new FileInfo(duplicates[0]).Length;
-                (long ticks, string path) = (File.GetCreationTimeUtc(duplicates[0]).Ticks, duplicates[0]);
-                foreach (string duplicate in duplicates.Skip(1))
+                int i = 0, count = map.Values.Count;
+                Parallel.ForEach(map.Values, duplicates =>
                 {
-                    long creation = File.GetCreationTimeUtc(duplicate).Ticks;
-                    if (creation >= ticks) handler(duplicate);
-                    else
+                    if (duplicates.Count < 2) return;
+                    long filesize = new FileInfo(duplicates[0]).Length;
+                    (long ticks, string path) = (File.GetCreationTimeUtc(duplicates[0]).Ticks, duplicates[0]);
+                    foreach (string duplicate in duplicates.Skip(1))
                     {
-                        handler(path);
-                        (ticks, path) = (creation, duplicate);
+                        long creation = File.GetCreationTimeUtc(duplicate).Ticks;
+                        if (creation >= ticks) handler(duplicate);
+                        else
+                        {
+                            handler(path);
+                            (ticks, path) = (creation, duplicate);
+                        }
                     }
-                }
 
-                // Update the statistics
-                Interlocked.Add(ref processed, duplicates.Count - 1);
-                Interlocked.Add(ref bytes, filesize * (duplicates.Count - 1));
-            });
+                    // Update the statistics
+                    Interlocked.Add(ref processed, duplicates.Count - 1);
+                    Interlocked.Add(ref bytes, filesize * (duplicates.Count - 1));
+                    int _i = Interlocked.Increment(ref i);
+                    progressBar.Report((double)i / count);
+                });
+            }
 
             // Display the statistics
             stopwatch.Stop();
