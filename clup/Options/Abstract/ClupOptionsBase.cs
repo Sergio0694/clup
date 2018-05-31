@@ -28,7 +28,7 @@ namespace clup.Options.Abstract
         [Option('h', "match", Default = MatchMode.MD5, HelpText = "The desired mode to match duplicate files.", Required = false)]
         public MatchMode Match { get; set; }
 
-        [Option('s', "source", HelpText = "The source directory to use to look for duplicates.", Required = true)]
+        [Option('s', "source", HelpText = "The source directory to use to look for duplicates.", Required = false)]
         public string SourceDirectory { get; set; }
 
         [Option("source-current", Default = false, HelpText = "Shortcut to set the source directory as the current working directory.", Required = false)]
