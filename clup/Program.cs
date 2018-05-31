@@ -10,12 +10,16 @@ namespace clup
     {
         public static int Main(string[] args)
         {
+            // Setup
             ConsoleColor color = Console.ForegroundColor;
+            Console.ForegroundColor = ConsoleColor.DarkGreen;
+            Console.WriteLine("==== START ====");
             int code;
             bool beep = false;
+
+            // Try to execute the requested action
             try
             {
-                // Try to execute the requested action
                 ParserResult<object> result = Parser.Default.ParseArguments<DeleteOptions, MoveOptions, ListOptions>(args);
                 result.WithParsed<ClupOptionsBase>(options => beep = options.Beep);
                 code = result.MapResult(
@@ -34,13 +38,17 @@ namespace clup
 #else
             catch
             {
-                Console.WriteLine("Something went wrong :'(");
                 code = 1;
             }
 #endif
 
-            // Error feedback
-            if (code != 0)
+            // Exit code feedback
+            if (code == 0)
+            {
+                Console.ForegroundColor = ConsoleColor.DarkGreen;
+                Console.WriteLine($"{Environment.NewLine}==== DONE ====");
+            }
+            else
             {
                 Console.ForegroundColor = ConsoleColor.DarkRed;
                 Console.WriteLine($"{Environment.NewLine}==== ERROR ====");

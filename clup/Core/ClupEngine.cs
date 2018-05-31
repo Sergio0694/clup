@@ -45,6 +45,7 @@ namespace clup.Core
         /// <param name="options">The command options</param>
         public static void Run(MoveOptions options)
         {
+            Directory.CreateDirectory(options.TargetDirectory);
             void Handler(string path)
             {
                 string filename = Path.GetFileName(path);
@@ -65,6 +66,7 @@ namespace clup.Core
             Run(options, path => duplicates.Enqueue(path));
 
             // Write the log to disk
+            if (!string.IsNullOrEmpty(options.TargetDirectory)) Directory.CreateDirectory(options.TargetDirectory);
             WriteLog(options.TargetDirectory ?? options.SourceDirectory, options, duplicates);
         }
 
@@ -80,8 +82,6 @@ namespace clup.Core
             stopwatch.Start();
             int processed = 0;
             long bytes = 0;
-            Console.ForegroundColor = ConsoleColor.DarkGreen;
-            Console.WriteLine("==== START ====");
             Console.ForegroundColor = ConsoleColor.White;
 
             // Initial arguments validation
@@ -191,8 +191,6 @@ namespace clup.Core
                 Console.ForegroundColor = ConsoleColor.White;
                 Console.Write(info);
             }
-            Console.ForegroundColor = ConsoleColor.DarkGreen;
-            Console.WriteLine($"{Environment.NewLine}==== DONE ====");
         }
 
         // Writes a complete log of the processed duplicates to the specified directory
