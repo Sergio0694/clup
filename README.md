@@ -32,5 +32,4 @@ Other options include:
 The libraries use the following libraries and NuGet packages:
 
 * [CommandLineParser](https://www.nuget.org/packages/commandlineparser/)
-* [Ben.Demystifier](https://www.nuget.org/packages/Ben.Demystifier/)
 * [JetBrains.Annotations](https://www.nuget.org/packages/JetBrains.Annotations/)
