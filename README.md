@@ -1,4 +1,4 @@
-# clup
+# clup - clean duplicates
 
 [![NuGet](https://img.shields.io/nuget/v/clup.svg)](https://www.nuget.org/packages/clup/) [![NuGet](https://img.shields.io/nuget/dt/clup.svg)](https://www.nuget.org/stats/packages/clup?groupby=Version) [![Twitter Follow](https://img.shields.io/twitter/follow/Sergio0694.svg?style=flat&label=Follow)](https://twitter.com/SergioPedri)
 
