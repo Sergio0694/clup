@@ -138,36 +138,36 @@ namespace clup.Core
                 {
                     // Compute the MD5 hash
                     if (exclusions.Count > 0 && exclusions.Contains(Path.GetExtension(file))) return;
-                    using (MD5 md5 = MD5.Create())
-                        try
+                    try
+                    {
+                        using (FileStream stream = File.OpenRead(file))
+                        using (MD5 md5 = MD5.Create())
                         {
-                            using (FileStream stream = File.OpenRead(file))
+                            byte[] hash = md5.ComputeHash(stream);
+                            string hex = BitConverter.ToString(hash);
+
+                            // Get the actual key for the current file
+                            string key;
+                            switch (options.Match)
                             {
-                                byte[] hash = md5.ComputeHash(stream);
-                                string hex = BitConverter.ToString(hash);
-
-                                // Get the actual key for the current file
-                                string key;
-                                switch (options.Match)
-                                {
-                                    case MatchMode.MD5AndExtension: key = $"{hex}{Path.GetExtension(file)}"; break;
-                                    case MatchMode.MD5AndFilename: key = $"{hex}{file}"; break;
-                                    default: key = hex; break;
-                                }
-
-                                // Update the mapping
-                                map.AddOrUpdate(key, new List<string> { file }, (_, list) =>
-                                {
-                                    list.Add(file);
-                                    return list;
-                                });
-                                progressBar.Report((double)Interlocked.Increment(ref i) / files.Count);
+                                case MatchMode.MD5AndExtension: key = $"{hex}{Path.GetExtension(file)}"; break;
+                                case MatchMode.MD5AndFilename: key = $"{hex}{file}"; break;
+                                default: key = hex; break;
                             }
+
+                            // Update the mapping
+                            map.AddOrUpdate(key, new List<string> { file }, (_, list) =>
+                            {
+                                list.Add(file);
+                                return list;
+                            });
+                            progressBar.Report((double)Interlocked.Increment(ref i) / files.Count);
                         }
-                        catch (Exception e) when (e is IOException || e is UnauthorizedAccessException)
-                        {
-                            // Just ignore
-                        }
+                    }
+                    catch (Exception e) when (e is IOException || e is UnauthorizedAccessException)
+                    {
+                        // Just ignore
+                    }
                 });
             }
 
