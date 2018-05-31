@@ -66,11 +66,11 @@ namespace clup.Core
             ClupStatisticsManager statistics = Run(options, path => duplicates.Enqueue(path));
 
             // Write the log to disk
-            if (options.TargetRoot) WriteLog(options.SourceDirectory, options, statistics, duplicates);
-            else if (!string.IsNullOrEmpty(options.TargetDirectory))
+            if (options.LogDirectoryRoot) WriteLog(options.SourceDirectory, options, statistics, duplicates);
+            else if (!string.IsNullOrEmpty(options.LogDirectory))
             {
-                Directory.CreateDirectory(options.TargetDirectory);
-                WriteLog(options.TargetDirectory, options, statistics, duplicates);
+                Directory.CreateDirectory(options.LogDirectory);
+                WriteLog(options.LogDirectory, options, statistics, duplicates);
             }
         }
 

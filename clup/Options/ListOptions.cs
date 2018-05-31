@@ -9,18 +9,18 @@ namespace clup.Options
     [Verb("list", HelpText = "Find duplicate files and list them into a text file in the specified directory")]
     internal sealed class ListOptions : ClupOptionsBase
     {
-        [Option('t', "target", HelpText = "The optional target directory to use to create the list file. If not specified, the source directory will be used.", Required = false)]
-        public string TargetDirectory { get; set; }
+        [Option('l', "logdir", HelpText = "An optional directory to use to store a log file.", Required = false)]
+        public string LogDirectory { get; set; }
 
-        [Option("target-root", Default = false, HelpText = "Shortcut to set the target directory as the same directory used as source.", Required = false)]
-        public bool TargetRoot { get; set; }
+        [Option("logdir-root", Default = false, HelpText = "Shortcut to set the log directory as the same directory used as source.", Required = false)]
+        public bool LogDirectoryRoot { get; set; }
 
         /// <inheritdoc/>
         public override void Validate()
         {
             base.Validate();
-            if (TargetRoot && !string.IsNullOrEmpty(TargetDirectory))
-                throw new ArgumentException("The --target-root and --target options can't be used at the same time");
+            if (LogDirectoryRoot && !string.IsNullOrEmpty(LogDirectory))
+                throw new ArgumentException("The --logdir-root and --logdir options can't be used at the same time");
         }
     }
 }

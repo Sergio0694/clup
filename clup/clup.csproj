@@ -16,6 +16,7 @@
     <RepositoryUrl>https://github.com/Sergio0694/clup</RepositoryUrl>
     <PackageTags>dotnet net cli netcore netstandard tool duplicate remove utility csharp</PackageTags>
     <PackageReleaseNotes>• Added new options (beep, verbose)
+• Minor adjustments to some options
 • Minor bug fixes and UI tweaks</PackageReleaseNotes>
   </PropertyGroup>
 
