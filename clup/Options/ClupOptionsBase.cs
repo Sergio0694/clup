@@ -16,19 +16,19 @@ namespace clup.Options
         [Option('i', "include", HelpText = "The list of file extensions to look for when scanning the target directory. If not specified, all existing files will be analyzed.", Required = false, Separator = ',')]
         public IEnumerable<string> FileExtensions { get; set; }
 
-        [Option('e', "exclude", HelpText = "The list of optional file extensions to filter out, when no other file extensions are specified", Required = false, Separator = ',')]
+        [Option('e', "exclude", HelpText = "The list of optional file extensions to filter out, when no other file extensions are specified.", Required = false, Separator = ',')]
         public IEnumerable<string> FileExclusions { get; set; }
 
         [Option('m', "minsize", Default = 0, HelpText = "The minimum size of files to be analyzed.", Required = false)]
         public long MinSize { get; set; }
 
-        [Option('M', "maxsize", Default = 104_857_600, HelpText = "The maximum size of files to be analyzed", Required = false)]
+        [Option('M', "maxsize", Default = 104_857_600, HelpText = "The maximum size of files to be analyzed.", Required = false)]
         public long MaxSize { get; set; }
 
-        [Option('h', "match", Default = MatchMode.MD5, HelpText = "The desired mode to match duplicate files", Required = false)]
+        [Option('h', "match", Default = MatchMode.MD5, HelpText = "The desired mode to match duplicate files.", Required = false)]
         public MatchMode Match { get; set; }
 
-        [Option('s', "source", HelpText = "The source directory to use to look for duplicates", Required = true)]
+        [Option('s', "source", HelpText = "The source directory to use to look for duplicates.", Required = true)]
         public string SourceDirectory { get; set; }
 
         [Option('b', "beep", Default = false, HelpText = "Play a sound when the requested operation completes.", Required = false)]
@@ -38,7 +38,7 @@ namespace clup.Options
         /// Executes a preliminary validation of the current instance
         /// </summary>
         [AssertionMethod]
-        public void Validate()
+        public virtual void Validate()
         {
             char[] invalid = Path.GetInvalidFileNameChars();
             if (FileExtensions.Any(ext => ext.Any(c => invalid.Contains(c))))
