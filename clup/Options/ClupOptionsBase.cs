@@ -34,6 +34,9 @@ namespace clup.Options
         [Option('b', "beep", Default = false, HelpText = "Play a sound when the requested operation completes.", Required = false)]
         public bool Beep { get; set; }
 
+        [Option('v', "verbose", Default = false, HelpText = "Indicates whether or not to calculate and display additional statistics.", Required = false)]
+        public bool Verbose { get; set; }
+
         /// <summary>
         /// Executes a preliminary validation of the current instance
         /// </summary>

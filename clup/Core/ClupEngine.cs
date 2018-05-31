@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
@@ -82,10 +81,7 @@ namespace clup.Core
         private static void Run([NotNull] ClupOptionsBase options, [NotNull] Action<string> handler)
         {
             // Stats
-            Stopwatch stopwatch = new Stopwatch();
-            stopwatch.Start();
-            int processed = 0;
-            long bytes = 0;
+            ClupStatisticsManager statistics = new ClupStatisticsManager();
             Console.ForegroundColor = ConsoleColor.White;
 
             // Initial arguments validation
@@ -119,7 +115,7 @@ namespace clup.Core
             ExploreDirectory(options.SourceDirectory);
             if (files.Count < 2)
             {
-                stopwatch.Stop();
+                statistics.StopTracking();
                 Console.WriteLine("No files were found in the source directory");
                 return;
             }
@@ -179,7 +175,7 @@ namespace clup.Core
                 Parallel.ForEach(map.Values, duplicates =>
                 {
                     if (duplicates.Count < 2) return;
-                    long filesize = new FileInfo(duplicates[0]).Length;
+                    statistics.AddDuplicates(duplicates);
                     (long ticks, string path) = (File.GetCreationTimeUtc(duplicates[0]).Ticks, duplicates[0]);
                     foreach (string duplicate in duplicates.Skip(1))
                     {
@@ -192,23 +188,15 @@ namespace clup.Core
                         }
                     }
 
-                    // Update the statistics
-                    Interlocked.Add(ref processed, duplicates.Count - 1);
-                    Interlocked.Add(ref bytes, filesize * (duplicates.Count - 1));
+                    // Update the progress bar
                     progressBar.Report((double)Interlocked.Increment(ref i) / count);
                 });
             }
 
             // Display the statistics
-            stopwatch.Stop();
+            statistics.StopTracking();
             Console.Write(Environment.NewLine);
-            foreach (string info in new[]
-            {
-                $"Elapsed time: \t\t{stopwatch.Elapsed:g}",
-                $"Duplicates found: \t{processed}",
-                $"Bytes identified: \t{bytes}",
-                $"Approximate size: \t{bytes.ToFileSizeString()}"
-            })
+            foreach (string info in statistics.ExtractStatistics(options.Verbose))
             {
                 ConsoleHelper.WriteTaggedMessage(MessageType.Info, info);
             }
