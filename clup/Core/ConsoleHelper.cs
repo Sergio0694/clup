@@ -30,6 +30,7 @@ namespace clup.Core
         // Shows a tagged message to the user
         private static void WriteTaggedMessage(ConsoleColor errorColor, string tag, string message)
         {
+            if (Console.CursorLeft > 0) Console.WriteLine();
             Console.ForegroundColor = errorColor;
             Console.Write($"[{tag}] ");
             Console.ForegroundColor = ConsoleColor.White;
