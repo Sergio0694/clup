@@ -26,6 +26,7 @@ Other options include:
 * `include`: a list of file extensions to use to filter the files in the source directory.
 * `exclude`: an optional list of file extensions to ignore (this option and `include` are mutually exclusive).
 * `beep`: play a short feedback sound when the requested operation completes.
+* `verbose`: display additional info after analyzing the source directory
 
 ## Dependencies
 
