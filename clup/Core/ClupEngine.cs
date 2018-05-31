@@ -203,16 +203,13 @@ namespace clup.Core
             Console.Write(Environment.NewLine);
             foreach (string info in new[]
             {
-                $"Elapsed time: \t\t{stopwatch.Elapsed:g}{Environment.NewLine}",
-                $"Duplicates found: \t{processed}{Environment.NewLine}",
-                $"Bytes identified: \t{bytes}{Environment.NewLine}",
+                $"Elapsed time: \t\t{stopwatch.Elapsed:g}",
+                $"Duplicates found: \t{processed}",
+                $"Bytes identified: \t{bytes}",
                 $"Approximate size: \t{bytes.ToFileSizeString()}"
             })
             {
-                Console.ForegroundColor = ConsoleColor.DarkCyan;
-                Console.Write("[INFO] ");
-                Console.ForegroundColor = ConsoleColor.White;
-                Console.Write(info);
+                ConsoleHelper.WriteTaggedMessage(MessageType.Info, info);
             }
         }
 

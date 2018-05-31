@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading;
 using clup.Core;
+using clup.Enums;
 using clup.Options;
 using CommandLine;
 
@@ -38,10 +39,7 @@ namespace clup
             }
             catch (Exception e)
             {
-                Console.ForegroundColor = ConsoleColor.DarkYellow;
-                Console.Write("[ERROR] ");
-                Console.ForegroundColor = ConsoleColor.White;
-                Console.Write(e.Message);
+                ConsoleHelper.WriteTaggedMessage(MessageType.Error, e.Message);
                 code = 1;
             }
 
@@ -49,12 +47,12 @@ namespace clup
             if (code == 0)
             {
                 Console.ForegroundColor = ConsoleColor.DarkGreen;
-                Console.WriteLine($"{Environment.NewLine}==== DONE ====");
+                Console.WriteLine($"==== DONE ====");
             }
             else if (parsed) // Avoid showing the error if the operation never actually started
             {
                 Console.ForegroundColor = ConsoleColor.DarkRed;
-                Console.WriteLine($"{Environment.NewLine}==== ERROR ====");
+                Console.WriteLine($"==== ERROR ====");
             }
             Console.ForegroundColor = color; // Reset to the default color
 
