@@ -111,6 +111,7 @@ namespace clup.Core
                 catch (Exception e) when (e is UnauthorizedAccessException || e is PathTooLongException)
                 {
                     // Just ignore and carry on
+                    ConsoleHelper.WriteTaggedMessage(MessageType.Error, $"Skipped {path}");
                 }
             }
 
