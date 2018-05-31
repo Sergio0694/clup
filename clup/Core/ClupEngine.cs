@@ -223,11 +223,9 @@ namespace clup.Core
                 writer.WriteLine("========");
                 writer.WriteLine(options.SourceDirectory);
                 string[] extensions = options.FileExtensions.ToArray();
-                if (extensions.Length > 0)
-                {
-                    string args = extensions.Length == 1 ? extensions[0] : $"{extensions[0]}{extensions.Skip(1).Aggregate(string.Empty, (seed, value) => $"{seed},{value}")}";
-                    writer.WriteLine($"--extensions={args}");
-                }
+                if (extensions.Length > 0) writer.WriteLine($"--include={extensions.Concat(',')}");
+                extensions = options.FileExclusions.ToArray();
+                if (extensions.Length > 0) writer.WriteLine($"--exclude={extensions.Concat(',')}");
                 writer.WriteLine($"--minsize={options.MinSize}");
                 writer.WriteLine($"--maxsize={options.MaxSize}");
                 writer.WriteLine($"--match={options.Match}");

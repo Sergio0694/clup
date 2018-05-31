@@ -1,4 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using JetBrains.Annotations;
 
 namespace clup.Core
 {
@@ -11,6 +14,7 @@ namespace clup.Core
         /// Converts a <see cref="long"/> into a string representing its file size
         /// </summary>
         /// <param name="value">The number of bytes to convert to a file size</param>
+        [Pure, NotNull]
         public static string ToFileSizeString(this long value)
         {
             if (value == 0) return "0 bytes";
@@ -18,6 +22,22 @@ namespace clup.Core
             int unitsCount = (int)Math.Log(value, 1024);
             decimal adjustedSize = (decimal)value / (1L << (unitsCount * 10));
             return string.Format("{0:n1} {1}", adjustedSize, SizeSuffixes[unitsCount]);
+        }
+
+        /// <summary>
+        /// Concats the strings in the input sequence into a single one, using the given separator
+        /// </summary>
+        /// <param name="parts">The sequence of strings to merge</param>
+        /// <param name="separator">The separator to use in the returned text</param>
+        [Pure, NotNull]
+        public static string Concat([NotNull, ItemNotNull] this IReadOnlyList<string> parts, char separator)
+        {
+            switch (parts.Count)
+            {
+                case 0: return string.Empty;
+                case 1: return parts[0];
+                default: return $"{parts[0]}{parts.Skip(1).Aggregate(string.Empty, (seed, value) => $"{seed}{separator}{value}")}";
+            }
         }
     }
 }
