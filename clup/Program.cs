@@ -12,15 +12,23 @@ namespace clup
         {
             // Setup
             ConsoleColor color = Console.ForegroundColor;
-            Console.ForegroundColor = ConsoleColor.DarkGreen;
-            Console.WriteLine("==== START ====");
             int code;
-            bool beep = false;
+            bool beep = false, parsed = false;
 
             // Try to execute the requested action
             try
             {
                 ParserResult<object> result = Parser.Default.ParseArguments<DeleteOptions, MoveOptions, ListOptions>(args);
+
+                // Only display ==== START ==== if the parsing is successful, to avoid changing colors for the --help auto-screen
+                if (result.Tag == ParserResultType.Parsed)
+                {
+                    Console.ForegroundColor = ConsoleColor.DarkGreen;
+                    Console.WriteLine($"{Environment.NewLine}==== START ====");
+                    parsed = true;
+                }
+
+                // Actual execution of the requested command
                 result.WithParsed<ClupOptionsBase>(options => beep = options.Beep);
                 code = result.MapResult(
                     (DeleteOptions options) => { ClupEngine.Run(options); return 0; },
@@ -48,7 +56,7 @@ namespace clup
                 Console.ForegroundColor = ConsoleColor.DarkGreen;
                 Console.WriteLine($"{Environment.NewLine}==== DONE ====");
             }
-            else
+            else if (parsed) // Avoid showing the error if the operation never actually started
             {
                 Console.ForegroundColor = ConsoleColor.DarkRed;
                 Console.WriteLine($"{Environment.NewLine}==== ERROR ====");
