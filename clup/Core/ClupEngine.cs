@@ -66,8 +66,12 @@ namespace clup.Core
             Run(options, path => duplicates.Enqueue(path));
 
             // Write the log to disk
-            if (!string.IsNullOrEmpty(options.TargetDirectory)) Directory.CreateDirectory(options.TargetDirectory);
-            WriteLog(options.TargetDirectory ?? options.SourceDirectory, options, duplicates);
+            if (options.TargetRoot) WriteLog(options.SourceDirectory, options, duplicates);
+            else if (!string.IsNullOrEmpty(options.TargetDirectory))
+            {
+                Directory.CreateDirectory(options.TargetDirectory);
+                WriteLog(options.TargetDirectory, options, duplicates);
+            }
         }
 
         #endregion
@@ -89,11 +93,30 @@ namespace clup.Core
 
             // Prepare the files query
             Console.WriteLine("Querying files...");
+            List<string> files = new List<string>();
             string[] extensions = options.FileExtensions.ToArray();
-            string[] files = (extensions.Length == 0
-                ? Directory.EnumerateFiles(options.SourceDirectory, "*", SearchOption.AllDirectories)
-                : extensions.SelectMany(extension => Directory.EnumerateFiles(options.SourceDirectory, $"*.{extension}", SearchOption.AllDirectories))).ToArray();
-            if (files.Length < 2)
+
+            // Local functions to manually explore the source directory (to be able to handle errors)
+            void ExploreDirectory(string path)
+            {
+                try
+                {
+                    IEnumerable<string> query = extensions.Length == 0
+                        ? Directory.EnumerateFiles(path, "*")
+                        : extensions.SelectMany(extension => Directory.EnumerateFiles(options.SourceDirectory, $"*.{extension}"));
+                    files.AddRange(query);
+                    foreach (string subdirectory in Directory.EnumerateDirectories(path))
+                        ExploreDirectory(subdirectory);
+                }
+                catch (Exception e) when (e is UnauthorizedAccessException || e is PathTooLongException)
+                {
+                    // Just ignore and carry on
+                }
+            }
+
+            // Execute the query and check the results
+            ExploreDirectory(options.SourceDirectory);
+            if (files.Count < 2)
             {
                 stopwatch.Stop();
                 Console.WriteLine("No files were found in the source directory");
@@ -101,7 +124,7 @@ namespace clup.Core
             }
 
             // Initialize the mapping between each target file and its MD5 hash
-            Console.Write($"Preprocessing {files.Length} files... ");
+            Console.Write($"Preprocessing {files.Count} files... ");
             ConcurrentDictionary<string, List<string>> map = new ConcurrentDictionary<string, List<string>>();
             Console.ForegroundColor = ConsoleColor.Gray;
             using (AsciiProgressBar progressBar = new AsciiProgressBar())
@@ -135,7 +158,7 @@ namespace clup.Core
                                     list.Add(file);
                                     return list;
                                 });
-                                progressBar.Report((double)Interlocked.Increment(ref i) / files.Length);
+                                progressBar.Report((double)Interlocked.Increment(ref i) / files.Count);
                             }
                         }
                         catch (Exception e) when (e is IOException || e is UnauthorizedAccessException)

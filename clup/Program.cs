@@ -36,19 +36,14 @@ namespace clup
                     (ListOptions options) => { ClupEngine.Run(options); return 0;},
                     errors => 1);
             }
-#if DEBUG
             catch (Exception e)
             {
-                System.Diagnostics.ExceptionExtentions.Demystify(e);
-                Console.WriteLine($"{e.StackTrace}{Environment.NewLine}{e.GetType()} - {e.Message}");
+                Console.ForegroundColor = ConsoleColor.DarkYellow;
+                Console.Write("[ERROR] ");
+                Console.ForegroundColor = ConsoleColor.White;
+                Console.Write(e.Message);
                 code = 1;
             }
-#else
-            catch
-            {
-                code = 1;
-            }
-#endif
 
             // Exit code feedback
             if (code == 0)
@@ -73,6 +68,9 @@ namespace clup
                 else Console.Beep(320, 500);
             }
 
+#if DEBUG
+            Console.ReadKey();
+#endif
             return code;
         }
     }
