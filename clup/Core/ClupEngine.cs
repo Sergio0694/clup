@@ -8,6 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using clup.Enums;
 using clup.Options;
+using CommandLine;
 using JetBrains.Annotations;
 
 namespace clup.Core
@@ -29,12 +30,12 @@ namespace clup.Core
             else
             {
                 ConcurrentQueue<string> deletions = new ConcurrentQueue<string>();
-                Run(options, path =>
+                ClupStatisticsManager statistics = Run(options, path =>
                 {
                     deletions.Enqueue(path);
                     File.Delete(path);
                 });
-                WriteLog(options.LogDirectory, options, deletions);
+                WriteLog(options.LogDirectory, options, statistics, deletions);
             }
         }
 
@@ -62,14 +63,14 @@ namespace clup.Core
         {
             // Find the duplicate files
             ConcurrentQueue<string> duplicates = new ConcurrentQueue<string>();
-            Run(options, path => duplicates.Enqueue(path));
+            ClupStatisticsManager statistics = Run(options, path => duplicates.Enqueue(path));
 
             // Write the log to disk
-            if (options.TargetRoot) WriteLog(options.SourceDirectory, options, duplicates);
+            if (options.TargetRoot) WriteLog(options.SourceDirectory, options, statistics, duplicates);
             else if (!string.IsNullOrEmpty(options.TargetDirectory))
             {
                 Directory.CreateDirectory(options.TargetDirectory);
-                WriteLog(options.TargetDirectory, options, duplicates);
+                WriteLog(options.TargetDirectory, options, statistics, duplicates);
             }
         }
 
@@ -78,7 +79,8 @@ namespace clup.Core
         #region Implementation
 
         // Executes the requested command
-        private static void Run([NotNull] ClupOptionsBase options, [NotNull] Action<string> handler)
+        [NotNull]
+        private static ClupStatisticsManager Run([NotNull] ClupOptionsBase options, [NotNull] Action<string> handler)
         {
             // Stats
             ClupStatisticsManager statistics = new ClupStatisticsManager();
@@ -117,7 +119,7 @@ namespace clup.Core
             {
                 statistics.StopTracking();
                 Console.WriteLine("No files were found in the source directory");
-                return;
+                return statistics;
             }
 
             // Initialize the mapping between each target file and its MD5 hash
@@ -200,23 +202,19 @@ namespace clup.Core
             {
                 ConsoleHelper.WriteTaggedMessage(MessageType.Info, info);
             }
+
+            return statistics;
         }
 
         // Writes a complete log of the processed duplicates to the specified directory
-        private static void WriteLog([NotNull] string path, [NotNull] ClupOptionsBase options, [NotNull, ItemNotNull] IEnumerable<string> duplicates)
+        private static void WriteLog([NotNull] string path, [NotNull] ClupOptionsBase options, [NotNull] ClupStatisticsManager statistics, [NotNull, ItemNotNull] IEnumerable<string> duplicates)
         {
             string logfile = Path.Combine(path, $"logfile_{DateTime.Now:yyyy-mm-dd[hh-mm-ss]}.txt");
             using (StreamWriter writer = File.CreateText(logfile))
             {
                 writer.WriteLine("========");
-                writer.WriteLine(options.SourceDirectory);
-                string[] extensions = options.FileExtensions.ToArray();
-                if (extensions.Length > 0) writer.WriteLine($"--include={extensions.Concat(',')}");
-                extensions = options.FileExclusions.ToArray();
-                if (extensions.Length > 0) writer.WriteLine($"--exclude={extensions.Concat(',')}");
-                writer.WriteLine($"--minsize={options.MinSize}");
-                writer.WriteLine($"--maxsize={options.MaxSize}");
-                writer.WriteLine($"--match={options.Match}");
+                writer.WriteLine(Parser.Default.FormatCommandLine(options));
+                foreach (string line in statistics.ExtractStatistics(options.Verbose)) writer.WriteLine(line);
                 writer.WriteLine("========");
                 foreach (string duplicate in duplicates) writer.WriteLine(duplicate);
             }
