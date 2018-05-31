@@ -6,7 +6,7 @@ A .NET Core 2.1 CLI tool to easily remove duplicate files.
 
 ## Installing from DotGet
 
-Make sure to get the [.NET Core 2.1 Runtime](https://www.microsoft.com/net/download/dotnet-core/runtime-2.1.0), then just run this command:
+Make sure to get the [.NET Core 2.1 SDK](https://www.microsoft.com/net/download/dotnet-core/sdk-2.1.300), then just run this command:
 
 ```
 dotnet tool install clup -g
