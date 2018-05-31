@@ -48,12 +48,12 @@ namespace clup
             if (code == 0)
             {
                 Console.ForegroundColor = ConsoleColor.DarkGreen;
-                Console.WriteLine("==== DONE ====");
+                Console.WriteLine("==== SUCCESS ====");
             }
             else if (parsed) // Avoid showing the error if the operation never actually started
             {
                 Console.ForegroundColor = ConsoleColor.DarkRed;
-                Console.WriteLine("==== ERROR ====");
+                Console.WriteLine("==== FAILURE ====");
             }
             Console.ForegroundColor = color; // Reset to the default color
 

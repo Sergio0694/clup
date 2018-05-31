@@ -51,14 +51,17 @@ namespace clup.Options.Abstract
                 throw new ArgumentException("One or more file extensions are not valid");
             if (MinSize < 0) throw new ArgumentException("The minimum file size must be a positive number");
             if (MaxSize <= MinSize) throw new ArgumentException("The maximum size must be greater than the minimum size");
-            if (string.IsNullOrEmpty(SourceDirectory)) throw new ArgumentException("The source directory can't be empty");
-            invalid = Path.GetInvalidPathChars();
-            if (SourceDirectory.Any(c => invalid.Contains(c))) throw new ArgumentException("The source directory isn't valid");
-            if (!Directory.Exists(SourceDirectory)) throw new ArgumentException("The source directory doesn't exist");
-            if (FileExtensions.Any() && FileExclusions.Any())
-                throw new ArgumentException("The list of extensions to exclude must be empty when other extensions to look for are specified");
+            if (string.IsNullOrEmpty(SourceDirectory) && !SourceDirectoryCurrent) throw new ArgumentException("The source directory can't be empty");
             if (SourceDirectoryCurrent && !string.IsNullOrEmpty(SourceDirectory))
                 throw new ArgumentException("The --source-current and --source options can't be used at the same time");
+            if (!string.IsNullOrEmpty(SourceDirectory))
+            {
+                invalid = Path.GetInvalidPathChars();
+                if (SourceDirectory.Any(c => invalid.Contains(c))) throw new ArgumentException("The source directory isn't valid");
+                if (!Directory.Exists(SourceDirectory)) throw new ArgumentException("The source directory doesn't exist");
+            }
+            if (FileExtensions.Any() && FileExclusions.Any())
+                throw new ArgumentException("The list of extensions to exclude must be empty when other extensions to look for are specified");
         }
     }
 }
