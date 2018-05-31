@@ -30,13 +30,8 @@ namespace clup.Core
             if (string.IsNullOrEmpty(options.LogDirectory)) Run(options, File.Delete);
             else
             {
-                ConcurrentQueue<string> deletions = new ConcurrentQueue<string>();
-                ClupStatisticsManager statistics = Run(options, path =>
-                {
-                    deletions.Enqueue(path);
-                    File.Delete(path);
-                });
-                WriteLog(options.LogDirectory, options, statistics, deletions);
+                ClupStatisticsManager statistics = Run(options, File.Delete);
+                WriteLog(options.LogDirectory, options, statistics);
             }
         }
 
@@ -63,18 +58,17 @@ namespace clup.Core
         public static void Run(ListOptions options)
         {
             // Find the duplicate files
-            ConcurrentQueue<string> duplicates = new ConcurrentQueue<string>();
-            ClupStatisticsManager statistics = Run(options, path => duplicates.Enqueue(path));
+            ClupStatisticsManager statistics = Run(options, null);
 
             // Write the log to disk
             if (options.LogDirectoryRoot)
             {
-                WriteLog(options.SourceDirectoryCurrent ? Directory.GetCurrentDirectory() : options.SourceDirectory, options, statistics, duplicates);
+                WriteLog(options.SourceDirectoryCurrent ? Directory.GetCurrentDirectory() : options.SourceDirectory, options, statistics);
             }
             else if (!string.IsNullOrEmpty(options.LogDirectory))
             {
                 Directory.CreateDirectory(options.LogDirectory);
-                WriteLog(options.LogDirectory, options, statistics, duplicates);
+                WriteLog(options.LogDirectory, options, statistics);
             }
         }
 
@@ -84,7 +78,7 @@ namespace clup.Core
 
         // Executes the requested command
         [NotNull]
-        private static ClupStatisticsManager Run([NotNull] ClupOptionsBase options, [NotNull] Action<string> handler)
+        private static ClupStatisticsManager Run([NotNull] ClupOptionsBase options, [CanBeNull] Action<string> handler)
         {
             // Stats
             ClupStatisticsManager statistics = new ClupStatisticsManager();
@@ -150,8 +144,8 @@ namespace clup.Core
                             string key;
                             switch (options.Match)
                             {
-                                case MatchMode.MD5AndExtension: key = $"{hex}{Path.GetExtension(file)}"; break;
-                                case MatchMode.MD5AndFilename: key = $"{hex}{file}"; break;
+                                case MatchMode.MD5AndExtension: key = $"{hex}|{Path.GetExtension(file)}"; break;
+                                case MatchMode.MD5AndFilename: key = $"{hex}|{Path.GetFileName(file)}"; break;
                                 default: key = hex; break;
                             }
 
@@ -178,23 +172,24 @@ namespace clup.Core
             using (AsciiProgressBar progressBar = new AsciiProgressBar())
             {
                 int i = 0, count = map.Values.Count;
-                Parallel.ForEach(map.Values, duplicates =>
+                Parallel.ForEach(map, pair =>
                 {
-                    if (duplicates.Count < 2) return;
-                    statistics.AddDuplicates(duplicates);
-                    (long ticks, string path) = (File.GetCreationTimeUtc(duplicates[0]).Ticks, duplicates[0]);
-                    foreach (string duplicate in duplicates.Skip(1))
+                    if (pair.Value.Count < 2) return;
+                    statistics.AddDuplicates(pair.Value);
+                    (long ticks, string path) = (File.GetCreationTimeUtc(pair.Value[0]).Ticks, pair.Value[0]);
+                    foreach (string duplicate in pair.Value.Skip(1))
                     {
                         long creation = File.GetCreationTimeUtc(duplicate).Ticks;
-                        if (creation >= ticks) handler(duplicate);
+                        if (creation >= ticks) handler?.Invoke(duplicate);
                         else
                         {
-                            handler(path);
+                            handler?.Invoke(path);
                             (ticks, path) = (creation, duplicate);
                         }
                     }
 
-                    // Update the progress bar
+                    // Update the progress bar and the statistics
+                    statistics.AddDuplicates(pair.Key, path, pair.Value);
                     progressBar.Report((double)Interlocked.Increment(ref i) / count);
                 });
             }
@@ -211,7 +206,7 @@ namespace clup.Core
         }
 
         // Writes a complete log of the processed duplicates to the specified directory
-        private static void WriteLog([NotNull] string path, [NotNull] ClupOptionsBase options, [NotNull] ClupStatisticsManager statistics, [NotNull, ItemNotNull] IEnumerable<string> duplicates)
+        private static void WriteLog([NotNull] string path, [NotNull] ClupOptionsBase options, [NotNull] ClupStatisticsManager statistics)
         {
             string logfile = Path.Combine(path, $"logfile_{DateTime.Now:yyyy-mm-dd[hh-mm-ss]}.txt");
             using (StreamWriter writer = File.CreateText(logfile))
@@ -220,7 +215,11 @@ namespace clup.Core
                 writer.WriteLine(Parser.Default.FormatCommandLine(options));
                 foreach (string line in statistics.ExtractStatistics(options.Verbose)) writer.WriteLine(line);
                 writer.WriteLine("========");
-                foreach (string duplicate in duplicates) writer.WriteLine(duplicate);
+                foreach(KeyValuePair<string, IReadOnlyList<string>> pair in statistics.DuplicatesMap)
+                {
+                    writer.WriteLine($"{Environment.NewLine}{pair.Key}");
+                    foreach (string duplicate in pair.Value) writer.WriteLine(duplicate);
+                }
             }
         }
 

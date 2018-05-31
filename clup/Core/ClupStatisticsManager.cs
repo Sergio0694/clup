@@ -22,6 +22,16 @@ namespace clup.Core
         [NotNull]
         private readonly ConcurrentDictionary<string, (int Count, long Bytes)> SizeMap = new ConcurrentDictionary<string, (int, long)>();
 
+        /// <summary>
+        /// Gets a readonly map of all the identified duplicate files
+        /// </summary>
+        [NotNull]
+        public IReadOnlyDictionary<string, IReadOnlyList<string>> DuplicatesMap => _DuplicatesMap;
+
+        // A map of all the identified duplicate files
+        [NotNull]
+        private readonly ConcurrentDictionary<string, IReadOnlyList<string>> _DuplicatesMap = new ConcurrentDictionary<string, IReadOnlyList<string>>();
+
         // The total number of duplicate files identified
         private int _Duplicates;
 
@@ -52,6 +62,18 @@ namespace clup.Core
                 Path.GetExtension(duplicates[0]),
                 (pending, filesize * pending),
                 (_, value) => (value.Count + pending, value.Bytes + filesize * pending));
+        }
+
+        /// <summary>
+        /// Adds a list of duplicate files, indicating their MD5 hash and moving the original one in the first position
+        /// </summary>
+        /// <param name="hash">The hash of the current group of duplicates</param>
+        /// <param name="original">The path of the original file</param>
+        /// <param name="duplicates">The list of duplicate files</param>
+        public void AddDuplicates([NotNull] string hash, [NotNull] string original, [NotNull, ItemNotNull] IReadOnlyList<string> duplicates)
+        {
+            string[] ordered = duplicates.OrderByDescending(path => path.Equals(original)).ToArray();
+            if (!_DuplicatesMap.TryAdd(hash, ordered)) throw new InvalidOperationException("Error adding the new key/value pair");
         }
 
         /// <summary>
