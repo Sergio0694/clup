@@ -4,9 +4,9 @@
     <OutputType>Exe</OutputType>
     <TargetFramework>netcoreapp2.1</TargetFramework>
     <PackAsTool>true</PackAsTool>
-    <Version>1.3.1</Version>
-    <AssemblyVersion>1.3.1.0</AssemblyVersion>
-    <FileVersion>1.3.1.0</FileVersion>
+    <Version>1.3.2</Version>
+    <AssemblyVersion>1.3.2.0</AssemblyVersion>
+    <FileVersion>1.3.2.0</FileVersion>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <Authors>Sergio Pedri</Authors>
     <Description>A no-nonsense duplicate files remover CLI tool, targeting .NET Core 2.1</Description>
@@ -15,9 +15,8 @@
     <PackageProjectUrl>https://github.com/Sergio0694/clup</PackageProjectUrl>
     <RepositoryUrl>https://github.com/Sergio0694/clup</RepositoryUrl>
     <PackageTags>dotnet net cli netcore netstandard tool duplicate remove utility csharp</PackageTags>
-    <PackageReleaseNotes>• Added new options (beep, verbose)
-• Minor adjustments to some options
-• Minor bug fixes and UI tweaks</PackageReleaseNotes>
+    <PackageReleaseNotes>• Added --source-current option
+• Minor bug fixes</PackageReleaseNotes>
   </PropertyGroup>
 
   <ItemGroup>

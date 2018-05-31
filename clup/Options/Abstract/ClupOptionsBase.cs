@@ -6,7 +6,7 @@ using clup.Enums;
 using CommandLine;
 using JetBrains.Annotations;
 
-namespace clup.Options
+namespace clup.Options.Abstract
 {
     /// <summary>
     /// The base class for all the available commands
@@ -31,6 +31,9 @@ namespace clup.Options
         [Option('s', "source", HelpText = "The source directory to use to look for duplicates.", Required = true)]
         public string SourceDirectory { get; set; }
 
+        [Option("source-current", Default = false, HelpText = "Shortcut to set the source directory as the current working directory.", Required = false)]
+        public bool SourceDirectoryCurrent { get; set; }
+
         [Option('b', "beep", Default = false, HelpText = "Play a sound when the requested operation completes.", Required = false)]
         public bool Beep { get; set; }
 
@@ -54,6 +57,8 @@ namespace clup.Options
             if (!Directory.Exists(SourceDirectory)) throw new ArgumentException("The source directory doesn't exist");
             if (FileExtensions.Any() && FileExclusions.Any())
                 throw new ArgumentException("The list of extensions to exclude must be empty when other extensions to look for are specified");
+            if (SourceDirectoryCurrent && !string.IsNullOrEmpty(SourceDirectory))
+                throw new ArgumentException("The --source-current and --source options can't be used at the same time");
         }
     }
 }

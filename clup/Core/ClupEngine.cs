@@ -8,6 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using clup.Enums;
 using clup.Options;
+using clup.Options.Abstract;
 using CommandLine;
 using JetBrains.Annotations;
 
@@ -66,7 +67,10 @@ namespace clup.Core
             ClupStatisticsManager statistics = Run(options, path => duplicates.Enqueue(path));
 
             // Write the log to disk
-            if (options.LogDirectoryRoot) WriteLog(options.SourceDirectory, options, statistics, duplicates);
+            if (options.LogDirectoryRoot)
+            {
+                WriteLog(options.SourceDirectoryCurrent ? Directory.GetCurrentDirectory() : options.SourceDirectory, options, statistics, duplicates);
+            }
             else if (!string.IsNullOrEmpty(options.LogDirectory))
             {
                 Directory.CreateDirectory(options.LogDirectory);
@@ -101,7 +105,7 @@ namespace clup.Core
                 {
                     IEnumerable<string> query = extensions.Length == 0
                         ? Directory.EnumerateFiles(path, "*")
-                        : extensions.SelectMany(extension => Directory.EnumerateFiles(options.SourceDirectory, $"*.{extension}"));
+                        : extensions.SelectMany(extension => Directory.EnumerateFiles(path, $"*.{extension}"));
                     files.AddRange(query);
                     foreach (string subdirectory in Directory.EnumerateDirectories(path))
                         ExploreDirectory(subdirectory);
@@ -114,7 +118,7 @@ namespace clup.Core
             }
 
             // Execute the query and check the results
-            ExploreDirectory(options.SourceDirectory);
+            ExploreDirectory(options.SourceDirectoryCurrent ? Directory.GetCurrentDirectory() : options.SourceDirectory);
             if (files.Count < 2)
             {
                 statistics.StopTracking();

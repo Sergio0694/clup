@@ -3,6 +3,7 @@ using System.Threading;
 using clup.Core;
 using clup.Enums;
 using clup.Options;
+using clup.Options.Abstract;
 using CommandLine;
 
 namespace clup

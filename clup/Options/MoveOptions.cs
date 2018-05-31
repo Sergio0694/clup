@@ -1,4 +1,5 @@
-﻿using CommandLine;
+﻿using clup.Options.Abstract;
+using CommandLine;
 
 namespace clup.Options
 {
