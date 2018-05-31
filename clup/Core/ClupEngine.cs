@@ -138,15 +138,15 @@ namespace clup.Core
                         using (MD5 md5 = MD5.Create())
                         {
                             byte[] hash = md5.ComputeHash(stream);
-                            string hex = BitConverter.ToString(hash);
+                            string base64 = Convert.ToBase64String(hash);
 
                             // Get the actual key for the current file
                             string key;
                             switch (options.Match)
                             {
-                                case MatchMode.MD5AndExtension: key = $"{hex}|{Path.GetExtension(file)}"; break;
-                                case MatchMode.MD5AndFilename: key = $"{hex}|{Path.GetFileName(file)}"; break;
-                                default: key = hex; break;
+                                case MatchMode.MD5AndExtension: key = $"{base64}|{Path.GetExtension(file)}"; break;
+                                case MatchMode.MD5AndFilename: key = $"{base64}|{Path.GetFileName(file)}"; break;
+                                default: key = base64; break;
                             }
 
                             // Update the mapping
@@ -208,6 +208,7 @@ namespace clup.Core
         // Writes a complete log of the processed duplicates to the specified directory
         private static void WriteLog([NotNull] string path, [NotNull] ClupOptionsBase options, [NotNull] ClupStatisticsManager statistics)
         {
+            Console.WriteLine("Writing log file...");
             string logfile = Path.Combine(path, $"logfile_{DateTime.Now:yyyy-mm-dd[hh-mm-ss]}.txt");
             using (StreamWriter writer = File.CreateText(logfile))
             {
