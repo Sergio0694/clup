@@ -191,7 +191,7 @@ namespace clup.Core
                     }
                     catch (Exception e) when (e is IOException || e is UnauthorizedAccessException)
                     {
-                        // Just ignore
+                        // Why u do dis?
                     }
                 });
             }
@@ -205,17 +205,26 @@ namespace clup.Core
                 int i = 0, count = hashMap.Values.Count;
                 Parallel.ForEach(hashMap, pair =>
                 {
+                    // Only keep the original file in each group
                     if (pair.Value.Count < 2) return;
                     statistics.AddDuplicates(pair.Value);
                     (long ticks, string path) = (File.GetCreationTimeUtc(pair.Value[0]).Ticks, pair.Value[0]);
                     foreach (string duplicate in pair.Value.Skip(1))
                     {
-                        long creation = File.GetCreationTimeUtc(duplicate).Ticks;
-                        if (creation >= ticks) handler?.Invoke(duplicate);
-                        else
+                        try
                         {
-                            handler?.Invoke(path);
-                            (ticks, path) = (creation, duplicate);
+                            long creation = File.GetCreationTimeUtc(duplicate).Ticks;
+                            if (creation >= ticks) handler?.Invoke(duplicate);
+                            else
+                            {
+                                handler?.Invoke(path);
+                                (ticks, path) = (creation, duplicate);
+                            }
+                        }
+                        catch
+                        {
+                            // Whops!
+                            if (options.Verbose) ConsoleHelper.WriteTaggedMessage(MessageType.Error, path);
                         }
                     }
 
