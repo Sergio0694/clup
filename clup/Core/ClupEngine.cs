@@ -90,14 +90,16 @@ namespace clup.Core
             // Prepare the files query
             ConsoleHelper.WriteLine("Querying files...");
             List<string> files = new List<string>();
-            string[] extensions = options.FileExtensions.Select(ext => ext.ToLowerInvariant()).ToArray();
+            IReadOnlyList<string> extensions = options.Preset.HasValue
+                ? ExtensionsPresetConverter.Convert(options.Preset.Value)
+                : options.FileInclusions.Select(ext => ext.ToLowerInvariant()).ToArray();
 
             // Local functions to manually explore the source directory (to be able to handle errors)
             void ExploreDirectory(string path)
             {
                 try
                 {
-                    IEnumerable<string> query = extensions.Length == 0
+                    IEnumerable<string> query = extensions.Count == 0
                         ? Directory.EnumerateFiles(path, "*")
                         : extensions.SelectMany(extension => Directory.EnumerateFiles(path, $"*.{extension}"));
                     files.AddRange(query);
@@ -148,7 +150,7 @@ namespace clup.Core
                     }
                 });
             }
-            string[] filtered = sizeMap.Values.Where(group => group.Count > 1).SelectMany(l => l).ToArray();
+            IReadOnlyCollection<string> filtered = sizeMap.Values.Where(group => group.Count > 1).SelectMany(l => l).ToArray();
             ConsoleHelper.WriteTaggedMessage(MessageType.Info, $"Found {sizeMap.Values.Sum(l => l.Count > 1 ? l.Count - 1 : 0)} potential duplicate(s)");
 
             // Initialize the mapping between each target file and its MD5 hash
@@ -186,7 +188,7 @@ namespace clup.Core
                                 list.Add(file);
                                 return list;
                             });
-                            progressBar.Report((double)Interlocked.Increment(ref i) / filtered.Length);
+                            progressBar.Report((double)Interlocked.Increment(ref i) / filtered.Count);
                         }
                     }
                     catch (Exception e) when (e is IOException || e is UnauthorizedAccessException)

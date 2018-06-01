@@ -24,7 +24,7 @@ namespace clup.Enums
         /// Returns a list of file extensions for a given preset
         /// </summary>
         /// <param name="preset">The source preset to convert</param>
-        public static IReadOnlyList<string> GetExtensions(this ExtensionsPreset preset)
+        public static IReadOnlyList<string> Convert(ExtensionsPreset preset)
         {
             switch (preset)
             {

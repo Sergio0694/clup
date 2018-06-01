@@ -14,7 +14,7 @@ namespace clup.Options.Abstract
     internal abstract class ClupOptionsBase
     {
         [Option('i', "include", HelpText = "The list of file extensions to look for when scanning the target directory. If not specified, all existing files will be analyzed.", Required = false, Separator = ',')]
-        public IEnumerable<string> FileExtensions { get; set; }
+        public IEnumerable<string> FileInclusions { get; set; }
 
         [Option('e', "exclude", HelpText = "The list of optional file extensions to filter out, when no other file extensions are specified.", Required = false, Separator = ',')]
         public IEnumerable<string> FileExclusions { get; set; }
@@ -50,7 +50,7 @@ namespace clup.Options.Abstract
         public virtual void Validate()
         {
             char[] invalid = Path.GetInvalidFileNameChars();
-            if (FileExtensions.Any(ext => ext.Any(c => invalid.Contains(c))))
+            if (FileInclusions.Any(ext => ext.Any(c => invalid.Contains(c))))
                 throw new ArgumentException("One or more file extensions are not valid");
             if (MinSize < 0) throw new ArgumentException("The minimum file size must be a positive number");
             if (MaxSize <= MinSize) throw new ArgumentException("The maximum size must be greater than the minimum size");
@@ -63,9 +63,9 @@ namespace clup.Options.Abstract
                 if (SourceDirectory.Any(c => invalid.Contains(c))) throw new ArgumentException("The source directory isn't valid");
                 if (!Directory.Exists(SourceDirectory)) throw new ArgumentException("The source directory doesn't exist");
             }
-            if (FileExtensions.Any() && FileExclusions.Any())
+            if (FileInclusions.Any() && FileExclusions.Any())
                 throw new ArgumentException("The list of extensions to exclude must be empty when other extensions to look for are specified");
-            if (Preset.HasValue && (FileExtensions.Any() || FileExclusions.Any()))
+            if (Preset.HasValue && (FileInclusions.Any() || FileExclusions.Any()))
                 throw new ArgumentException("The preset option cannot be used with --include or --exclude");
         }
     }
