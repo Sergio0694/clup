@@ -26,7 +26,7 @@ namespace clup
                 if (result.Tag == ParserResultType.Parsed)
                 {
                     Console.ForegroundColor = ConsoleColor.DarkGreen;
-                    Console.WriteLine($"{Environment.NewLine}==== START ====");
+                    ConsoleHelper.WriteLine($"{Environment.NewLine}==== START ====");
                     parsed = true;
                 }
 
@@ -48,12 +48,12 @@ namespace clup
             if (code == 0)
             {
                 Console.ForegroundColor = ConsoleColor.DarkGreen;
-                Console.WriteLine("==== SUCCESS ====");
+                ConsoleHelper.WriteLine("==== SUCCESS ====");
             }
             else if (parsed) // Avoid showing the error if the operation never actually started
             {
                 Console.ForegroundColor = ConsoleColor.DarkRed;
-                Console.WriteLine("==== FAILURE ====");
+                ConsoleHelper.WriteLine("==== FAILURE ====");
             }
             Console.ForegroundColor = color; // Reset to the default color
 

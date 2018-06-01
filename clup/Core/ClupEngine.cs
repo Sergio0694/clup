@@ -88,7 +88,7 @@ namespace clup.Core
             options.Validate();
 
             // Prepare the files query
-            Console.WriteLine("Querying files...");
+            ConsoleHelper.WriteLine("Querying files...");
             List<string> files = new List<string>();
             string[] extensions = options.FileExtensions.ToArray();
 
@@ -116,13 +116,13 @@ namespace clup.Core
             if (files.Count < 2)
             {
                 statistics.StopTracking();
-                Console.WriteLine("No files were found in the source directory");
+                ConsoleHelper.WriteLine("No files were found in the source directory");
                 return statistics;
             }
             ConsoleHelper.WriteTaggedMessage(MessageType.Info, $"Identified {files.Count} files");
 
             // Look for files that have at least another file with the same size
-            Console.Write("Filtering files... ");
+            ConsoleHelper.Write("Filtering files... ");
             ConcurrentDictionary<long, List<string>> sizeMap = new ConcurrentDictionary<long, List<string>>();
             Console.ForegroundColor = ConsoleColor.Gray;
             using (AsciiProgressBar progressBar = new AsciiProgressBar())
@@ -153,7 +153,7 @@ namespace clup.Core
 
             // Initialize the mapping between each target file and its MD5 hash
             Console.ForegroundColor = ConsoleColor.White;
-            Console.Write($"{Environment.NewLine}Preprocessing filtered files... ");
+            ConsoleHelper.Write("Preprocessing filtered files... ");
             ConcurrentDictionary<string, List<string>> hashMap = new ConcurrentDictionary<string, List<string>>();
             Console.ForegroundColor = ConsoleColor.Gray;
             using (AsciiProgressBar progressBar = new AsciiProgressBar())
@@ -199,7 +199,7 @@ namespace clup.Core
 
             // Process each duplicate file that has been found
             Console.ForegroundColor = ConsoleColor.White;
-            Console.Write($"{Environment.NewLine}Processing duplicates... ");
+            ConsoleHelper.Write("Processing duplicates... ");
             Console.ForegroundColor = ConsoleColor.Gray;
             using (AsciiProgressBar progressBar = new AsciiProgressBar())
             {
@@ -240,7 +240,7 @@ namespace clup.Core
         // Writes a complete log of the processed duplicates to the specified directory
         private static void WriteLog([NotNull] string path, [NotNull] ClupOptionsBase options, [NotNull] ClupStatisticsManager statistics)
         {
-            Console.WriteLine("Writing log file...");
+            ConsoleHelper.WriteLine("Writing log file...");
             string logfile = Path.Combine(path, $"logfile_{DateTime.Now:yyyy-mm-dd[hh-mm-ss]}.txt");
             using (StreamWriter writer = File.CreateText(logfile))
             {
