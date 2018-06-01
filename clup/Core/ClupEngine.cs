@@ -104,10 +104,10 @@ namespace clup.Core
                     foreach (string subdirectory in Directory.EnumerateDirectories(path))
                         ExploreDirectory(subdirectory);
                 }
-                catch (Exception e) when (e is UnauthorizedAccessException || e is PathTooLongException)
+                catch (Exception e) when (e is UnauthorizedAccessException || e is PathTooLongException || e is DirectoryNotFoundException)
                 {
                     // Just ignore and carry on
-                    ConsoleHelper.WriteTaggedMessage(MessageType.Error, $"Skipped {path}");
+                    if (options.Verbose) ConsoleHelper.WriteTaggedMessage(MessageType.Error, path);
                 }
             }
 
@@ -119,16 +119,48 @@ namespace clup.Core
                 Console.WriteLine("No files were found in the source directory");
                 return statistics;
             }
+            ConsoleHelper.WriteTaggedMessage(MessageType.Info, $"Identified {files.Count} files");
 
-            // Initialize the mapping between each target file and its MD5 hash
-            Console.Write($"Preprocessing {files.Count} files... ");
-            ConcurrentDictionary<string, List<string>> map = new ConcurrentDictionary<string, List<string>>();
+            // Look for files that have at least another file with the same size
+            Console.Write("Filtering files... ");
+            ConcurrentDictionary<long, List<string>> sizeMap = new ConcurrentDictionary<long, List<string>>();
             Console.ForegroundColor = ConsoleColor.Gray;
             using (AsciiProgressBar progressBar = new AsciiProgressBar())
             {
                 int i = 0;
                 HashSet<string> exclusions = new HashSet<string>(options.FileExclusions.Select(entry => $".{entry}"));
                 Parallel.ForEach(files, file =>
+                {
+                    if (exclusions.Count > 0 && exclusions.Contains(Path.GetExtension(file))) return;
+                    try
+                    {
+                        long size = new FileInfo(file).Length;
+                        sizeMap.AddOrUpdate(size, new List<string> { file }, (_, list) =>
+                        {
+                            list.Add(file);
+                            return list;
+                        });
+                        progressBar.Report((double)Interlocked.Increment(ref i) / files.Count);
+                    }
+                    catch (Exception e) when (e is IOException)
+                    {
+                        // Carry on
+                    }
+                });
+            }
+            string[] filtered = sizeMap.Values.Where(group => group.Count > 1).SelectMany(l => l).ToArray();
+            ConsoleHelper.WriteTaggedMessage(MessageType.Info, $"Found {sizeMap.Values.Sum(l => l.Count > 1 ? l.Count - 1 : 0)} potential duplicate(s)");
+
+            // Initialize the mapping between each target file and its MD5 hash
+            Console.ForegroundColor = ConsoleColor.White;
+            Console.Write($"{Environment.NewLine}Preprocessing filtered files... ");
+            ConcurrentDictionary<string, List<string>> hashMap = new ConcurrentDictionary<string, List<string>>();
+            Console.ForegroundColor = ConsoleColor.Gray;
+            using (AsciiProgressBar progressBar = new AsciiProgressBar())
+            {
+                int i = 0;
+                HashSet<string> exclusions = new HashSet<string>(options.FileExclusions.Select(entry => $".{entry}"));
+                Parallel.ForEach(filtered, file =>
                 {
                     // Compute the MD5 hash
                     if (exclusions.Count > 0 && exclusions.Contains(Path.GetExtension(file))) return;
@@ -150,12 +182,12 @@ namespace clup.Core
                             }
 
                             // Update the mapping
-                            map.AddOrUpdate(key, new List<string> { file }, (_, list) =>
+                            hashMap.AddOrUpdate(key, new List<string> { file }, (_, list) =>
                             {
                                 list.Add(file);
                                 return list;
                             });
-                            progressBar.Report((double)Interlocked.Increment(ref i) / files.Count);
+                            progressBar.Report((double)Interlocked.Increment(ref i) / filtered.Length);
                         }
                     }
                     catch (Exception e) when (e is IOException || e is UnauthorizedAccessException)
@@ -171,8 +203,8 @@ namespace clup.Core
             Console.ForegroundColor = ConsoleColor.Gray;
             using (AsciiProgressBar progressBar = new AsciiProgressBar())
             {
-                int i = 0, count = map.Values.Count;
-                Parallel.ForEach(map, pair =>
+                int i = 0, count = hashMap.Values.Count;
+                Parallel.ForEach(hashMap, pair =>
                 {
                     if (pair.Value.Count < 2) return;
                     statistics.AddDuplicates(pair.Value);
@@ -216,7 +248,7 @@ namespace clup.Core
                 writer.WriteLine(Parser.Default.FormatCommandLine(options));
                 foreach (string line in statistics.ExtractStatistics(options.Verbose)) writer.WriteLine(line);
                 writer.WriteLine("========");
-                foreach(KeyValuePair<string, IReadOnlyList<string>> pair in statistics.DuplicatesMap)
+                foreach (KeyValuePair<string, IReadOnlyList<string>> pair in statistics.DuplicatesMap)
                 {
                     writer.WriteLine($"{Environment.NewLine}{pair.Key}");
                     foreach (string duplicate in pair.Value) writer.WriteLine(duplicate);
