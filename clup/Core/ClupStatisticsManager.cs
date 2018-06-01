@@ -98,7 +98,8 @@ namespace clup.Core
                 var frequent = (
                     from pair in SizeMap
                     orderby pair.Value.Count descending
-                    select (Key: pair.Key, Count: pair.Value.Count)).Take(5).ToArray();
+                    let extension = string.IsNullOrEmpty(pair.Key) ? "{none}" : pair.Key
+                    select (Key: extension, Count: pair.Value.Count)).Take(5).ToArray();
                 if (frequent.Length == 0) yield break;
                 yield return "Frequent extensions:\t" + frequent.Skip(1).Aggregate(
                     $"{frequent[0].Key}: {frequent[0].Count}",
@@ -108,7 +109,8 @@ namespace clup.Core
                 var heaviest = (
                     from pair in SizeMap
                     orderby pair.Value.Bytes descending
-                    select (Key: pair.Key, Bytes: pair.Value.Bytes)).Take(5).ToArray();
+                    let extension = string.IsNullOrEmpty(pair.Key) ? "{none}" : pair.Key
+                    select (Key: extension, Bytes: pair.Value.Bytes)).Take(5).ToArray();
                 yield return "Heaviest extensions:\t" +  heaviest.Skip(1).Aggregate(
                     $"{heaviest[0].Key}: {heaviest[0].Bytes.ToFileSizeString()}",
                     (seed, value) => $"{seed}, {value.Key}: {value.Bytes.ToFileSizeString()}");
