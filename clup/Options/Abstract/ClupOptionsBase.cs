@@ -19,6 +19,9 @@ namespace clup.Options.Abstract
         [Option('e', "exclude", HelpText = "The list of optional file extensions to filter out, when no other file extensions are specified.", Required = false, Separator = ',')]
         public IEnumerable<string> FileExclusions { get; set; }
 
+        [Option('p', "preset", Default = null, HelpText = "An optional preset to quickly filter certain common file types. This option cannot be used when --include or --exclude are used.", Required = false)]
+        public ExtensionsPreset? Preset { get; set; }
+
         [Option('m', "minsize", Default = 0, HelpText = "The minimum size of files to be analyzed.", Required = false)]
         public long MinSize { get; set; }
 
@@ -62,6 +65,8 @@ namespace clup.Options.Abstract
             }
             if (FileExtensions.Any() && FileExclusions.Any())
                 throw new ArgumentException("The list of extensions to exclude must be empty when other extensions to look for are specified");
+            if (Preset.HasValue && (FileExtensions.Any() || FileExclusions.Any()))
+                throw new ArgumentException("The preset option cannot be used with --include or --exclude");
         }
     }
 }
