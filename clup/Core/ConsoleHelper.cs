@@ -48,8 +48,9 @@ namespace clup.Core
         {
             Console.ForegroundColor = errorColor;
             Console.Write($"{(Console.CursorLeft > 0 ? Environment.NewLine : string.Empty)}[{tag}] ");
-            Console.ForegroundColor = ConsoleColor.White;
+            Console.ForegroundColor = ConsoleColor.Gray;
             Console.WriteLine(message);
+            Console.ForegroundColor = ConsoleColor.White;
         }
     }
 }
