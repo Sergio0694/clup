@@ -90,7 +90,7 @@ namespace clup.Core
             // Prepare the files query
             ConsoleHelper.WriteLine("Querying files...");
             List<string> files = new List<string>();
-            string[] extensions = options.FileExtensions.ToArray();
+            string[] extensions = options.FileExtensions.Select(ext => ext.ToLowerInvariant()).ToArray();
 
             // Local functions to manually explore the source directory (to be able to handle errors)
             void ExploreDirectory(string path)
@@ -125,13 +125,13 @@ namespace clup.Core
             ConsoleHelper.Write("Filtering files... ");
             ConcurrentDictionary<long, List<string>> sizeMap = new ConcurrentDictionary<long, List<string>>();
             Console.ForegroundColor = ConsoleColor.Gray;
+            HashSet<string> exclusions = new HashSet<string>(options.FileExclusions.Select(entry => $".{entry.ToLowerInvariant()}"));
             using (AsciiProgressBar progressBar = new AsciiProgressBar())
             {
                 int i = 0;
-                HashSet<string> exclusions = new HashSet<string>(options.FileExclusions.Select(entry => $".{entry}"));
                 Parallel.ForEach(files, file =>
                 {
-                    if (exclusions.Count > 0 && exclusions.Contains(Path.GetExtension(file))) return;
+                    if (exclusions.Count > 0 && exclusions.Contains(Path.GetExtension(file).ToLowerInvariant())) return;
                     try
                     {
                         long size = new FileInfo(file).Length;
@@ -159,11 +159,10 @@ namespace clup.Core
             using (AsciiProgressBar progressBar = new AsciiProgressBar())
             {
                 int i = 0;
-                HashSet<string> exclusions = new HashSet<string>(options.FileExclusions.Select(entry => $".{entry}"));
                 Parallel.ForEach(filtered, file =>
                 {
                     // Compute the MD5 hash
-                    if (exclusions.Count > 0 && exclusions.Contains(Path.GetExtension(file))) return;
+                    if (exclusions.Count > 0 && exclusions.Contains(Path.GetExtension(file).ToLowerInvariant())) return;
                     try
                     {
                         using (FileStream stream = File.OpenRead(file))
@@ -176,7 +175,7 @@ namespace clup.Core
                             string key;
                             switch (options.Match)
                             {
-                                case MatchMode.MD5AndExtension: key = $"{base64}|{Path.GetExtension(file)}"; break;
+                                case MatchMode.MD5AndExtension: key = $"{base64}|{Path.GetExtension(file).ToLowerInvariant()}"; break;
                                 case MatchMode.MD5AndFilename: key = $"{base64}|{Path.GetFileName(file)}"; break;
                                 default: key = base64; break;
                             }

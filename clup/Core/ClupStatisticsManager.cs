@@ -59,7 +59,7 @@ namespace clup.Core
             long filesize = new FileInfo(duplicates[0]).Length;
             Interlocked.Add(ref _Bytes, filesize * pending);
             SizeMap.AddOrUpdate(
-                Path.GetExtension(duplicates[0]),
+                Path.GetExtension(duplicates[0]).ToLowerInvariant(),
                 (pending, filesize * pending),
                 (_, value) => (value.Count + pending, value.Bytes + filesize * pending));
         }
