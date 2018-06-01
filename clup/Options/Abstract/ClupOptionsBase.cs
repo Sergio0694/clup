@@ -25,8 +25,8 @@ namespace clup.Options.Abstract
         [Option('M', "maxsize", Default = 104_857_600, HelpText = "The maximum size of files to be analyzed.", Required = false)]
         public long MaxSize { get; set; }
 
-        [Option('h', "match", Default = MatchMode.MD5, HelpText = "The desired mode to match duplicate files.", Required = false)]
-        public MatchMode Match { get; set; }
+        [Option('h', "hash", Default = HashMode.MD5, HelpText = "The desired mode to match duplicate files.", Required = false)]
+        public HashMode Hash { get; set; }
 
         [Option('s', "source", HelpText = "The source directory to use to look for duplicates.", Required = false)]
         public string SourceDirectory { get; set; }

@@ -173,10 +173,10 @@ namespace clup.Core
 
                             // Get the actual key for the current file
                             string key;
-                            switch (options.Match)
+                            switch (options.Hash)
                             {
-                                case MatchMode.MD5AndExtension: key = $"{base64}|{Path.GetExtension(file).ToLowerInvariant()}"; break;
-                                case MatchMode.MD5AndFilename: key = $"{base64}|{Path.GetFileName(file)}"; break;
+                                case HashMode.MD5AndExtension: key = $"{base64}|{Path.GetExtension(file).ToLowerInvariant()}"; break;
+                                case HashMode.MD5AndFilename: key = $"{base64}|{Path.GetFileName(file)}"; break;
                                 default: key = base64; break;
                             }
 

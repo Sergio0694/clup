@@ -3,7 +3,7 @@
     /// <summary>
     /// An enum that indicates how to match files to check if they are duplicates
     /// </summary>
-    internal enum MatchMode
+    internal enum HashMode
     {
         /// <summary>
         /// Simple comparison of the MD5 hash of the file contents
