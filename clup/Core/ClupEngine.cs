@@ -10,7 +10,6 @@ using clup.Enums;
 using clup.Options;
 using clup.Options.Abstract;
 using CommandLine;
-using JetBrains.Annotations;
 
 namespace clup.Core
 {
@@ -76,9 +75,13 @@ namespace clup.Core
 
         #region Implementation
 
-        // Executes the requested command
-        [NotNull]
-        private static ClupStatisticsManager Run([NotNull] ClupOptionsBase options, [CanBeNull] Action<string> handler)
+        /// <summary>
+        /// Executes the requested command
+        /// </summary>
+        /// <param name="options">The input options to use.</param>
+        /// <param name="handler">An optional handler for input files.</param>
+        /// <returns>The resulting statistics.</returns>
+        private static ClupStatisticsManager Run(ClupOptionsBase options, Action<string>? handler)
         {
             // Stats
             ClupStatisticsManager statistics = new ClupStatisticsManager();
@@ -89,7 +92,7 @@ namespace clup.Core
 
             // Prepare the files query
             ConsoleHelper.WriteLine("Querying files...");
-            List<string> files = new List<string>();
+            List<string> files = new();
             IReadOnlyList<string> extensions = options.Preset.HasValue
                 ? ExtensionsPresetConverter.Convert(options.Preset.Value)
                 : options.FileInclusions.Select(ext => ext.ToLowerInvariant()).ToArray();
@@ -248,7 +251,7 @@ namespace clup.Core
         }
 
         // Writes a complete log of the processed duplicates to the specified directory
-        private static void WriteLog([NotNull] string path, [NotNull] ClupOptionsBase options, [NotNull] ClupStatisticsManager statistics)
+        private static void WriteLog(string path, ClupOptionsBase options, ClupStatisticsManager statistics)
         {
             ConsoleHelper.WriteLine("Writing log file...");
             string logfile = Path.Combine(path, $"logfile_{DateTime.Now:yyyy-mm-dd[hh-mm-ss]}.txt");

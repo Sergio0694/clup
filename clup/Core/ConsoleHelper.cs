@@ -1,6 +1,5 @@
 ﻿using System;
 using clup.Enums;
-using JetBrains.Annotations;
 
 namespace clup.Core
 {
@@ -13,7 +12,7 @@ namespace clup.Core
         /// Writes a new message to the console, making sure it's displayed at the start of a new line
         /// </summary>
         /// <param name="message">The message to display</param>
-        public static void Write([NotNull] string message)
+        public static void Write(string message)
         {
             Console.Write($"{(Console.CursorLeft > 0 ? Environment.NewLine : string.Empty)}{message}");
         }
@@ -22,14 +21,17 @@ namespace clup.Core
         /// Writes a new message to the console, making sure it's displayed at the start of a new line, and appends a line terminator
         /// </summary>
         /// <param name="message">The message to display</param>
-        public static void WriteLine([NotNull] string message) => Write($"{message}{Environment.NewLine}");
+        public static void WriteLine(string message)
+        {
+            Write($"{message}{Environment.NewLine}");
+        }
 
         /// <summary>
         /// Shows a message to the user
         /// </summary>
         /// <param name="type">The type of message being displayed</param>
         /// <param name="message">The text of the message</param>
-        public static void WriteTaggedMessage(MessageType type, [NotNull] string message)
+        public static void WriteTaggedMessage(MessageType type, string message)
         {
             switch (type)
             {
@@ -44,7 +46,7 @@ namespace clup.Core
         }
 
         // Shows a tagged message to the user
-        private static void WriteTaggedMessage(ConsoleColor errorColor, [NotNull] string tag, [NotNull] string message)
+        private static void WriteTaggedMessage(ConsoleColor errorColor, string tag, string message)
         {
             Console.ForegroundColor = errorColor;
             Console.Write($"{(Console.CursorLeft > 0 ? Environment.NewLine : string.Empty)}[{tag}] ");

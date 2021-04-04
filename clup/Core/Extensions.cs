@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.Contracts;
 using System.Linq;
-using JetBrains.Annotations;
 
 namespace clup.Core
 {
@@ -14,11 +14,11 @@ namespace clup.Core
         /// Converts a <see cref="long"/> into a string representing its file size
         /// </summary>
         /// <param name="value">The number of bytes to convert to a file size</param>
-        [Pure, NotNull]
+        [Pure]
         public static string ToFileSizeString(this long value)
         {
             if (value == 0) return "0 bytes";
-            String[] SizeSuffixes = { "bytes", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB" };
+            string[] SizeSuffixes = { "bytes", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB" };
             int unitsCount = (int)Math.Log(value, 1024);
             decimal adjustedSize = (decimal)value / (1L << (unitsCount * 10));
             return string.Format("{0:n1} {1}", adjustedSize, SizeSuffixes[unitsCount]);
@@ -29,8 +29,8 @@ namespace clup.Core
         /// </summary>
         /// <param name="parts">The sequence of strings to merge</param>
         /// <param name="separator">The separator to use in the returned text</param>
-        [Pure, NotNull]
-        public static string Concat([NotNull, ItemNotNull] this IReadOnlyList<string> parts, char separator)
+        [Pure]
+        public static string Concat(this IReadOnlyList<string> parts, char separator)
         {
             switch (parts.Count)
             {

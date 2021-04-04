@@ -4,7 +4,6 @@ using System.IO;
 using System.Linq;
 using clup.Enums;
 using CommandLine;
-using JetBrains.Annotations;
 
 namespace clup.Options.Abstract
 {
@@ -46,7 +45,6 @@ namespace clup.Options.Abstract
         /// <summary>
         /// Executes a preliminary validation of the current instance
         /// </summary>
-        [AssertionMethod]
         public virtual void Validate()
         {
             char[] invalid = Path.GetInvalidFileNameChars();

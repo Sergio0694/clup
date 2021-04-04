@@ -2,10 +2,10 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.Contracts;
 using System.IO;
 using System.Linq;
 using System.Threading;
-using JetBrains.Annotations;
 
 namespace clup.Core
 {
@@ -14,40 +14,49 @@ namespace clup.Core
     /// </summary>
     internal sealed class ClupStatisticsManager
     {
-        // The timer to keep track of the elapsed time
-        [NotNull]
-        private readonly Stopwatch Stopwatch = new Stopwatch();
+        /// <summary>
+        /// The timer to keep track of the elapsed time
+        /// </summary>
+        private readonly Stopwatch Stopwatch = new();
 
-        // A map between each available file extensions and its relative data
-        [NotNull]
-        private readonly ConcurrentDictionary<string, (int Count, long Bytes)> SizeMap = new ConcurrentDictionary<string, (int, long)>();
+        /// <summary>
+        /// A map between each available file extensions and its relative data
+        /// </summary>
+        private readonly ConcurrentDictionary<string, (int Count, long Bytes)> SizeMap = new();
+
+        /// <summary>
+        /// The map of all the identified duplicate files
+        /// </summary>
+        private readonly ConcurrentDictionary<string, IReadOnlyList<string>> _DuplicatesMap = new();
+
+        /// <summary>
+        /// The total number of duplicate files identified
+        /// </summary>
+        private int _Duplicates;
+
+        /// <summary>
+        /// The total number of duplicate bytes identified
+        /// </summary>
+        private long _Bytes;
 
         /// <summary>
         /// Gets a readonly map of all the identified duplicate files
         /// </summary>
-        [NotNull]
         public IReadOnlyDictionary<string, IReadOnlyList<string>> DuplicatesMap => _DuplicatesMap;
-
-        // A map of all the identified duplicate files
-        [NotNull]
-        private readonly ConcurrentDictionary<string, IReadOnlyList<string>> _DuplicatesMap = new ConcurrentDictionary<string, IReadOnlyList<string>>();
-
-        // The total number of duplicate files identified
-        private int _Duplicates;
-
-        // The total number of duplicate bytes identified
-        private long _Bytes;
 
         /// <summary>
         /// Creates a new instance and automatically starts the internal timer
         /// </summary>
-        public ClupStatisticsManager() => Stopwatch.Start();
+        public ClupStatisticsManager()
+        {
+            Stopwatch.Start();
+        }
 
         /// <summary>
         /// Adds a new list of duplicates to the internal statistics
         /// </summary>
         /// <param name="duplicates">The paths of the current batch of duplicate files</param>
-        public void AddDuplicates([NotNull, ItemNotNull] IReadOnlyList<string> duplicates)
+        public void AddDuplicates(IReadOnlyList<string> duplicates)
         {
             // Base case to ignore
             if (duplicates.Count == 0) throw new InvalidOperationException("The duplicates list can't be empty");
@@ -70,7 +79,7 @@ namespace clup.Core
         /// <param name="hash">The hash of the current group of duplicates</param>
         /// <param name="original">The path of the original file</param>
         /// <param name="duplicates">The list of duplicate files</param>
-        public void AddDuplicates([NotNull] string hash, [NotNull] string original, [NotNull, ItemNotNull] IReadOnlyList<string> duplicates)
+        public void AddDuplicates(string hash, string original, IReadOnlyList<string> duplicates)
         {
             string[] ordered = duplicates.OrderByDescending(path => path.Equals(original)).ToArray();
             if (!_DuplicatesMap.TryAdd(hash, ordered)) throw new InvalidOperationException("Error adding the new key/value pair");
@@ -85,7 +94,7 @@ namespace clup.Core
         /// Prepares the statistics to display to the user
         /// </summary>
         /// <param name="verbose">Indicates whether or not to also include additional info</param>
-        [Pure, NotNull, ItemNotNull]
+        [Pure]
         public IEnumerable<string> ExtractStatistics(bool verbose)
         {
             yield return $"Elapsed time:\t\t{Stopwatch.Elapsed:g}";
